@@ -30,10 +30,10 @@
 		
 			<h1 slot="title">账户资料</h1>
 			
-			<a slot="extra" @click="modifyAccount" v-if="!accountEdit">
+			<!--<a slot="extra" @click="modifyAccount" v-if="!accountEdit">
 				<Icon type="md-create" />
 				<span>编辑</span>
-			</a>
+			</a>-->
 			
 			<Row style="flex-wrap: nowrap;" type="flex" >
 				
@@ -43,7 +43,7 @@
 					
 					<Form :label-width="80" :class="!accountEdit ? 'my-form' : ''">
 				        <FormItem label="用户名">
-				        	<span v-if="!accountEdit">Admin</span>
+				        	<span v-if="!accountEdit">{{myInfoData.name}}</span>
 				        	<Input v-if="accountEdit" style="max-width: 260px;"></Input>
 				        </FormItem>
 				        <FormItem label="密码">
@@ -51,13 +51,13 @@
 				        	<Input v-if="accountEdit" style="max-width: 260px;"></Input>
 				        </FormItem>
 				        <FormItem label="手机号">
-				        	<span v-if="!accountEdit">13800138000</span>
+				        	<span v-if="!accountEdit">{{myInfoData.mobile}}</span>
 				        	<Input v-if="accountEdit" style="max-width: 260px;"></Input>
 				        </FormItem>
-				        <FormItem label="邮箱">
+				        <!--<FormItem label="邮箱">
 				        	<span v-if="!accountEdit">21321312@qq.com</span>
 				        	<Input v-if="accountEdit" style="max-width: 260px;"></Input>
-				        </FormItem>
+				        </FormItem>-->
 				    </Form>
 					
 				</Col>
@@ -77,24 +77,24 @@
 			
 			<h1 slot="title">身份资料</h1>
 			
-			<a slot="extra" @click="modifyData = true" v-show="!modifyData">
+			<a slot="extra" @click="modifyData = false" v-show="!modifyData && identityInfoData">
 				<Icon type="md-create" />
-				<span>编辑</span>
+				<span>修改</span>
 			</a>
 			
-			<Form :class="!modifyData ? 'my-form' : ''" ref="formInstance" :model="formInstance" :rules="ruleInline" :label-width="100">
+			<Form :class="!modifyData && identityInfoData ? 'my-form' : ''" ref="formInstance" :model="formInstance" :rules="ruleInline" :label-width="100">
 				
 				<Row>
 							
 					<Col v-for="item in formData" :key="item.value" :xs="24" :sm="24" :md="12" :lg="12">
 						
-						<FormItem :prop="item.value" :label="item.label" v-show="modifyData">
+						<FormItem :prop="item.value" :label="item.label" v-show="modifyData || !identityInfoData">
 							
-							<div v-if="modifyData">
+							<div v-if="modifyData || !identityInfoData">
 								<Input v-if="item.type == 'text'" v-model="formInstance[item.value]" :placeholder="'输入'+item.label"></Input>
 								<RadioGroup v-if="item.type == 'radio'" v-model="formInstance[item.value]">
 							        <template v-for="selItem in item.select">
-							        	<Radio :label="selItem"></Radio>
+							        	<Radio :label="selItem[0]">{{selItem[1]}}</Radio>
 							        </template>
 							    </RadioGroup>
 							    <DatePicker v-if="item.type == 'date'" type="month" :placeholder="'输入'+item.label" @on-change="dateSelect" :start-date="new Date(1970)" placeholder="选择日期" style="width: 100%;"></DatePicker>
@@ -105,9 +105,9 @@
 							
 				        </FormItem>
 				        
-						<FormItem :label="item.label" v-show="!modifyData">
+						<FormItem :label="item.label" v-show="modifyData || identityInfoData">
 							
-							<span v-if="!modifyData" style="color: #c5c8ce;">未填写</span>
+							<span v-if="modifyData || identityInfoData" style="color: #c5c8ce;">未填写</span>
 							
 				        </FormItem>
 				        
@@ -117,11 +117,11 @@
 				
 			</Form>
 			
-			<div style="text-align: center;margin-top: 16px;">
-				<Button type="primary" v-if="modifyData" @click="submitIDInfo('formInstance')">保存</Button>
+			<div v-if="!modifyData && !identityInfoData" style="text-align: center;margin-top: 16px;">
+				<Button v-if="!identityInfoData" type="primary" @click="submitIDInfo('formInstance')">保存</Button>
 				&nbsp;
 				&nbsp;
-				<Button v-if="modifyData" @click="cancelIDInfo('formInstance')">取消</Button>
+				<Button v-if="identityInfoData" @click="cancelIDInfo('formInstance')">取消</Button>
 			</div>
 			
 		</Card>
@@ -253,6 +253,10 @@ export default {
         	
         	modifyData: false,
         	
+        	myInfoData: {},//我的信息
+        	
+        	identityInfoData: null,//身份信息
+        	
         	formData: [
         		{
         			label: '真实姓名',
@@ -262,7 +266,7 @@ export default {
         		{
         			label: '性别',
         			value: 'sex',
-        			select: ['男','女'],
+        			select: [ [0, '男'], [1, '女'] ],
         			type: 'radio'
         		},
         		{
@@ -375,7 +379,7 @@ export default {
         		{
         			label: '婚姻状况',
         			value: 'marriage',
-        			select: ['已婚','未婚'],
+        			select: [ [0, '已婚'], [1, '未婚'] ],
         			type: 'radio'
         		},
         		{
@@ -425,41 +429,36 @@ export default {
     		this.accountEdit = true;
     	},
     	
-    	submitIDInfo(name){//身份资料
-    		
+    	setSubmitAjax(){//设置身份资料提交数据
+    		$ax.getAjaxData('Helper/createFormToken', {}, res1 => {
+    			if(res1.code == 0){
+    				$ax.getAjaxData('Center/addPersonInfoAjax', Object.assign({}, this.formInstance, {
+    					token_key: res1.data.token_key,
+    					token: res1.data.token
+    				}), res2 => {
+                		if(res2.code == 0){
+                			this.modifyData = false;
+                			this.$Message.success('添加成功');
+                		}
+                	});
+    			}
+    		});
+    	},
+    	
+    	submitIDInfo(name){//提交身份资料
             this.$refs[name].validate((valid) => {
-            	
                 if (valid) {
-                	
-                	$ax.getAjaxData('Center/addPersonInfoAjax', this.formInstance, response => {
-                		
-                	})
-                	
-                    this.$Message.success('提交成功!');
-                    
-//                  this.$refs[name].resetFields();
-                    
-                    this.modifyData = false;
-                    
-                } else {
-                	
-                    this.$Message.error('提交失败!');
-                    
+                	this.setSubmitAjax();
                 }
-                
             });
-    		
     	},
     	
-    	cancelIDInfo(name){
-    		
-    		this.modifyData = false;
-    		
+    	cancelIDInfo(name){//取消修改
+    		this.modifyData = true;
     		this.$refs[name].resetFields();
-    		
     	},
     	
-    	dateSelect(date){
+    	dateSelect(date){//格式化日期
     		this.formInstance.brithday = date;
     	},
     	
@@ -484,15 +483,44 @@ export default {
 	
 	beforeRouteEnter (to, from, next) {//在组件创建之前调用（放置页面加载时请求的Ajax）
 		
-//		$ax.getAllAjaxData([
-//  		{url: 'Center/myInfo'},
-//  		{url: 'Center/personInfoAjax'}
-//  	],(aaa,bbb) => {
-//  		next(vm => {});
-//  	});
-    	
-    	next();
-    	
+		(async() => {//执行异步函数
+			
+			//async、await错误处理
+			try {
+				
+				/*
+				 * 
+				 * ------串行执行---------
+				 * console.log(await getAjaxData());
+				 * ...
+				 * 
+				 * ---------并行：将多个promise直接发起请求（先执行async所在函数），然后再进行await操作。（执行效率高、快）----------
+				 * let abc = getAjaxData();//先执行promise函数
+				 * ...
+				 * console.log(await abc);
+				 * ...
+				*/
+				
+				let getMyInfo = await $ax.getAsyncAjaxData('Center/myInfo', {});//获取个人信息
+				
+				let getIdentityInfo = await $ax.getAsyncAjaxData('Center/personInfoAjax', {});//获取身份信息
+				
+				next(vm => {
+					if(getMyInfo.code == 0){
+						vm.myInfoData = getMyInfo.data;
+					}
+					if(getIdentityInfo.code == 0){
+						//vm.identityInfoData = getIdentityInfo.data;
+					}
+				});
+				
+			} catch(err) {
+				console.log(err);
+				next();
+			}
+			
+		})();
+		
 	},
 	
 }

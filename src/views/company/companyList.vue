@@ -9,7 +9,7 @@
 				<Button type="primary" size="small" style="margin-left: 10px;" @click="addShow = true">创建公司</Button>
 			</div>
 			
-			<Table stripe :columns="columns1" :data="data1"></Table>
+			<xw-table :tableColumns="tableColumns" :tableData="tableData"></xw-table>
 			
 		</Card>
 		
@@ -134,46 +134,19 @@ export default {
         		}
         	],
         	
-        	columns1: [
+        	tableColumns: [
                 {
-                    title: 'Name',
+                    title: 'ID',
+                    key: 'id'
+                },
+                {
+                    title: '名称',
                     key: 'name'
                 },
-                {
-                    title: 'Age',
-                    key: 'age'
-                },
-                {
-                    title: 'Address',
-                    key: 'address'
-                }
             ],
-            data1: [
-                {
-                    name: 'John Brown',
-                    age: 18,
-                    address: 'New York No. 1 Lake Park',
-                    date: '2016-10-03'
-                },
-                {
-                    name: 'Jim Green',
-                    age: 24,
-                    address: 'London No. 1 Lake Park',
-                    date: '2016-10-01'
-                },
-                {
-                    name: 'Joe Black',
-                    age: 30,
-                    address: 'Sydney No. 1 Lake Park',
-                    date: '2016-10-02'
-                },
-                {
-                    name: 'Jon Snow',
-                    age: 26,
-                    address: 'Ottawa No. 2 Lake Park',
-                    date: '2016-10-04'
-                }
-            ]
+            
+            tableData: [],
+            
         }
     },
     methods: {//方法
@@ -264,7 +237,7 @@ export default {
 				
 				next(vm => {
 					if(companyData.code == 0){
-						console.log(companyData.data);
+						vm.tableData = companyData.data
 					}
 				});
 				
