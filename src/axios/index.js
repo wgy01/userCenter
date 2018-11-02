@@ -77,7 +77,15 @@ axios.interceptors.response.use(
 	_res => { //在这里对返回的数据进行处理
 		
 		console.log('<--返回了数据', _res.data);
-
+		
+		if(_res.data.code){
+			
+			if(_res.data.code != 0){
+				vm.$Message.warning(_res.data.msg);
+			}
+			
+		}
+		
 		return _res.data;
 
 	},

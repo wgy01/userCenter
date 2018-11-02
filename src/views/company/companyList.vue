@@ -4,58 +4,68 @@
 		
 		<Card>
 			
-			<h1 slot="title">新建公司</h1>
+			<div slot="title" class="cardTitle">
+				<h1>公司列表</h1>
+				<Button type="primary" size="small" style="margin-left: 10px;" @click="addShow = true">创建公司</Button>
+			</div>
 			
-			<Form ref="formInstance" :model="formData" :rules="ruleData" :label-width="70">
+			<Table stripe :columns="columns1" :data="data1"></Table>
+			
+		</Card>
+		
+		<Modal v-model="addShow" width="600">
+			
+	        <p slot="header">创建公司</p>
+	        
+	        <Form ref="formInstance" :model="formData" :rules="ruleData" :label-width="70">
 				
 				<Row :gutter="16">
 					
 					<Col :xs="24" :sm="24" :md="12" :lg="12">
+						
 						<FormItem label="公司名称" prop="name">
-							<Input></Input>
+							<Input v-model="formData.name"></Input>
 				        </FormItem>
+				        
 				        <FormItem label="公司行业" prop="industry">
-							<Select v-model="formData.industry" style="width:100%">
-						        <Option value="1">行业1</Option>
-						        <Option value="2">行业2</Option>
-						    </Select>
+				        	<Cascader :data="industryData" v-model="formData.industry"></Cascader>
 				        </FormItem>
+				        
 				        <FormItem label="国家" prop="nation">
 							<Select v-model="formData.nation" style="width:100%">
 						        <Option value="86">中国</Option>
 						        <Option value="87">美国</Option>
 						    </Select>
 				        </FormItem>
+				        
 					</Col>
 					
 					<Col :xs="24" :sm="24" :md="12" :lg="12">
+						
 						<FormItem label="公司地址" prop="address">
 							<cascader-area v-model="formData.address"></cascader-area>
 				        </FormItem>
+				        
 						<FormItem label="企业官网" prop="website">
 							<Input v-model="formData.website"></Input>
 				        </FormItem>
+				        
 				        <FormItem label="主营业务" prop="business">
 							<Input v-model="formData.business"></Input>
 				        </FormItem>
+				        
 					</Col>
 					
 				</Row>
 				
 			</Form>
 			
-		</Card>
-		
-		<Card style="margin-top: 16px;">
-			
-			<div slot="title" class="cardTitle">
-				<h1>公司列表</h1>
-				<Button type="primary" size="small" style="margin-left: 10px;">创建公司</Button>
-			</div>
-			
-			<Table stripe :columns="columns1" :data="data1"></Table>
-			
-		</Card>
+	        <div slot="footer">
+	            <Button @click="addShow = false">取消</Button>
+	            <Button type="primary" @click="addCompany('formInstance')">确定创建</Button>
+	        </div>
+	        
+	    </Modal>
 		
 	</div>
 	
@@ -79,9 +89,11 @@ export default {
     data () {//数据
         return {
         	
+        	addShow: false,
+        	
         	formData: {
         		name: '',//公司名称
-        		industry: '',//公司行业
+        		industry: [],//公司行业
         		nation: '86',//国家
         		address: [],//公司地址
         		website: '',//企业官网
@@ -93,7 +105,7 @@ export default {
                     { required: true, message: '请输入公司名称', trigger: 'blur' }
                 ],
                 industry: [
-                    { required: true, message: '请选择公司行业', trigger: 'change' }
+                    { type: 'array', required: true, message: '请选择公司行业', trigger: 'change' }
                 ],
                 nation: [
                     { required: true, message: '选择国家', trigger: 'blur' }
@@ -107,7 +119,20 @@ export default {
                 business: [
                     { required: true, message: '请填写主营业务', trigger: 'blur' }
                 ],
-           },
+           	},
+        	
+        	industryData: [
+        		{
+        			value: 'A',
+                    label: '行业1',
+                    children: [
+                    	{
+                    		value: '1',
+                    		label: '行业1-1',
+                    	}
+                    ]
+        		}
+        	],
         	
         	columns1: [
                 {
@@ -153,6 +178,49 @@ export default {
     },
     methods: {//方法
     	
+    	setSubmitAjax(){//设置提交数据
+    		$ax.getAjaxData('Helper/createFormToken', {}, res1 => {//获取表单toKen
+    			if(res1.code == 0){
+    				$ax.getAjaxData('Center/addCompanyInfo', {
+    					name: this.formData.name,//公司名称
+    					hx1: this.formData.industry[0],//行业代码
+    					hx2: this.formData.industry[1],//行业代码
+    					nation: this.formData.nation,//国家
+    					provice: this.formData.address[0],//省份
+    					city: this.formData.address[1],//城市
+    					county: this.formData.address[2],//地区
+    					town: '666666',//街道
+    					website: this.formData.website,//企业官网
+    					business: this.formData.business,//主营业务
+    					yy_img: 'img.jpg',//营业执照照片
+    					token_key: res1.data.token_key,
+    					token: res1.data.token,
+    				}, res2 => {
+    					if(res2.code == 0){
+    						this.formData = {
+				        		name: '',//公司名称
+				        		industry: [],//公司行业
+				        		nation: '86',//国家
+				        		address: [],//公司地址
+				        		website: '',//企业官网
+				        		business: '',//主营业务
+				        	};
+    						this.addShow = false;
+    						this.$Message.success('创建成功');
+    					}
+    				});
+    			}
+    		});
+    	},
+    	
+    	addCompany(name){//创建公司
+    		this.$refs[name].validate((valid) => {
+                if(valid){
+                	this.setSubmitAjax();
+                }
+            });
+    	},
+    	
     },
     computed: {//计算属性
         	
@@ -191,12 +259,18 @@ export default {
 				 * console.log(await abc);
 				 * ...
 				*/
+				
+				let companyData = await $ax.getAsyncAjaxData('Center/companyInfoAjax', {});
+				
 				next(vm => {
-					
+					if(companyData.code == 0){
+						console.log(companyData.data);
+					}
 				});
 				
 			} catch(err) {
 				console.log(err);
+				next();
 			}
 			
 		})();
