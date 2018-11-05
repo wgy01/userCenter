@@ -13,7 +13,7 @@
 			
 		</Card>
 		
-		<Modal v-model="addShow" width="600">
+		<Modal v-model="addShow" width="700">
 			
 	        <p slot="header">创建公司</p>
 	        
@@ -159,10 +159,10 @@ export default {
     					hx1: this.formData.industry[0],//行业代码
     					hx2: this.formData.industry[1],//行业代码
     					nation: this.formData.nation,//国家
-    					provice: this.formData.address[0],//省份
-    					city: this.formData.address[1],//城市
-    					county: this.formData.address[2],//地区
-    					town: '666666',//街道
+    					provice: this.formData.address[0] || '666',//省份
+    					city: this.formData.address[1] || '666',//城市
+    					county: this.formData.address[2] || '666',//地区
+    					town: '666',//街道
     					website: this.formData.website,//企业官网
     					business: this.formData.business,//主营业务
     					yy_img: 'img.jpg',//营业执照照片
@@ -178,10 +178,20 @@ export default {
 				        		website: '',//企业官网
 				        		business: '',//主营业务
 				        	};
+				        	console.log(this.formData);
+				        	this.getCompanyList();
     						this.addShow = false;
     						this.$Message.success('创建成功');
     					}
     				});
+    			}
+    		});
+    	},
+    	
+    	getCompanyList(){//获取公司列表
+    		$ax.getAjaxData('Center/companyInfoAjax', {}, res => {
+    			if(res.code == 0){
+    				this.tableData = res.data;
     			}
     		});
     	},
@@ -220,20 +230,7 @@ export default {
 			//async、await错误处理
 			try {
 				
-				/*
-				 * 
-				 * ------串行执行---------
-				 * console.log(await getAjaxData());
-				 * ...
-				 * 
-				 * ---------并行：将多个promise直接发起请求（先执行async所在函数），然后再进行await操作。（执行效率高、快）----------
-				 * let abc = getAjaxData();//先执行promise函数
-				 * ...
-				 * console.log(await abc);
-				 * ...
-				*/
-				
-				let companyData = await $ax.getAsyncAjaxData('Center/companyInfoAjax', {});
+				let companyData = await $ax.getAsyncAjaxData('Center/companyInfoAjax', {});//获取公司列表
 				
 				next(vm => {
 					if(companyData.code == 0){

@@ -14,6 +14,22 @@ import secondaryView from '@/components/secondary-view.vue';
 
 export default [
 	{
+	    path: '/login',
+	    name: 'login',
+	    meta: {
+	      hideMenu: true,
+	    },
+	    component: () => import('@/views/login_register/login.vue')
+	},
+	{
+	    path: '/register',
+	    name: 'register',
+	    meta: {
+	      hideMenu: true,
+	    },
+	    component: () => import('@/views/login_register/register.vue')
+	},
+	{
 		path: '/',
 		name: '_home',
 	    redirect: '/home',

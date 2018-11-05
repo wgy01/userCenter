@@ -77,39 +77,35 @@
 			
 			<h1 slot="title">身份资料</h1>
 			
-			<a slot="extra" @click="modifyData = false" v-show="!modifyData && identityInfoData">
+			<a slot="extra" @click="modifyBtn" v-show="!modifyData">
 				<Icon type="md-create" />
 				<span>修改</span>
 			</a>
-			
-			<Form :class="!modifyData && identityInfoData ? 'my-form' : ''" ref="formInstance" :model="formInstance" :rules="ruleInline" :label-width="100">
+			<Form :class="!modifyData ? 'my-form' : ''" ref="formInstance" :model="formInstance" :rules="ruleInline" :label-width="100">
 				
 				<Row>
 							
 					<Col v-for="item in formData" :key="item.value" :xs="24" :sm="24" :md="12" :lg="12">
 						
-						<FormItem :prop="item.value" :label="item.label" v-show="modifyData || !identityInfoData">
-							
-							<div v-if="modifyData || !identityInfoData">
+						<FormItem v-show="modifyData" :prop="item.value" :label="item.label">
+							<div v-if="modifyData">
 								<Input v-if="item.type == 'text'" v-model="formInstance[item.value]" :placeholder="'输入'+item.label"></Input>
 								<RadioGroup v-if="item.type == 'radio'" v-model="formInstance[item.value]">
 							        <template v-for="selItem in item.select">
 							        	<Radio :label="selItem[0]">{{selItem[1]}}</Radio>
 							        </template>
 							    </RadioGroup>
-							    <DatePicker v-if="item.type == 'date'" type="month" :placeholder="'输入'+item.label" @on-change="dateSelect" :start-date="new Date(1970)" placeholder="选择日期" style="width: 100%;"></DatePicker>
+							    <DatePicker v-if="item.type == 'date'" :value="new Date(parseInt(formInstance[item.value])*1000)" type="date" :placeholder="'输入'+item.label" @on-change="dateSelect" placeholder="选择日期" style="width: 100%;"></DatePicker>
 							    <Select v-if="item.type == 'select'" v-model="formInstance[item.value]" :placeholder="'输入'+item.label" style="width:100%">
 							        <Option v-for="selItem in item.select" :value="selItem.value" :key="selItem.value">{{ selItem.label }}</Option>
 							    </Select>
 							</div>
-							
 				        </FormItem>
 				        
-						<FormItem :label="item.label" v-show="modifyData || identityInfoData">
-							
-							<span v-if="modifyData || identityInfoData" style="color: #c5c8ce;">未填写</span>
-							
+						<FormItem :label="item.label" v-show="identityInfoData && !modifyData">
+							<span v-if="identityInfoData && !modifyData" :style="{color: identityInfoData && identityInfoData[item.value] ? '' : '#c5c8ce'}">{{identityInfoData[item.value]}}</span>
 				        </FormItem>
+				        
 				        
 					</Col>
 					
@@ -117,11 +113,11 @@
 				
 			</Form>
 			
-			<div v-if="!modifyData && !identityInfoData" style="text-align: center;margin-top: 16px;">
-				<Button v-if="!identityInfoData" type="primary" @click="submitIDInfo('formInstance')">保存</Button>
+			<div v-if="modifyData" style="text-align: center;margin-top: 16px;">
+				<Button v-if="modifyData" type="primary" @click="submitIDInfo('formInstance')">提交</Button>
 				&nbsp;
 				&nbsp;
-				<Button v-if="identityInfoData" @click="cancelIDInfo('formInstance')">取消</Button>
+				<Button v-if="identityInfoData && modifyData" @click="cancelIDInfo('formInstance')">取消</Button>
 			</div>
 			
 		</Card>
@@ -255,7 +251,7 @@ export default {
         	
         	myInfoData: {},//我的信息
         	
-        	identityInfoData: null,//身份信息
+        	identityInfoData: [],//身份信息
         	
         	formData: [
         		{
@@ -266,7 +262,7 @@ export default {
         		{
         			label: '性别',
         			value: 'sex',
-        			select: [ [0, '男'], [1, '女'] ],
+        			select: [ ['1', '男'], ['2', '女'] ],
         			type: 'radio'
         		},
         		{
@@ -280,15 +276,15 @@ export default {
         			select: [
         				{
         					label: '身份证',
-        					value: 0
+        					value: '1'
         				},
         				{
         					label: '居住证',
-        					value: 1
+        					value: '2'
         				},
         				{
         					label: '单身证',
-        					value: 2
+        					value: '3'
         				},
         			],
         			type: 'select'
@@ -301,12 +297,40 @@ export default {
         		{
         			label: '国籍',
         			value: 'nation',
-        			type: 'text'
+        			select: [
+        				{
+        					label: '中国',
+        					value: '80'
+        				},
+        				{
+        					label: '美国',
+        					value: '81'
+        				},
+        				{
+        					label: '英国',
+        					value: '82'
+        				},
+        			],
+        			type: 'select'
         		},
         		{
         			label: '民族',
         			value: 'mz',
-        			type: 'text'
+        			select: [
+        				{
+        					label: '汉族',
+        					value: '1'
+        				},
+        				{
+        					label: '壮族',
+        					value: '2'
+        				},
+        				{
+        					label: '苗族',
+        					value: '3'
+        				},
+        			],
+        			type: 'select'
         		},
         		{
         			label: '籍贯',
@@ -344,15 +368,15 @@ export default {
         			select: [
         				{
         					label: '本科',
-        					value: 0
+        					value: '1'
         				},
         				{
         					label: '专科',
-        					value: 1
+        					value: '2'
         				},
         				{
         					label: '研究生',
-        					value: 2
+        					value: '3'
         				},
         			],
         			type: 'select'
@@ -363,15 +387,15 @@ export default {
         			select: [
         				{
         					label: '群众',
-        					value: 0
+        					value: '1'
         				},
         				{
         					label: '团员',
-        					value: 1
+        					value: '2'
         				},
         				{
         					label: '党员',
-        					value: 2
+        					value: '3'
         				},
         			],
         			type: 'select'
@@ -379,7 +403,7 @@ export default {
         		{
         			label: '婚姻状况',
         			value: 'marriage',
-        			select: [ [0, '已婚'], [1, '未婚'] ],
+        			select: [ ['1', '已婚'], ['2', '未婚'] ],
         			type: 'radio'
         		},
         		{
@@ -433,10 +457,14 @@ export default {
     		$ax.getAjaxData('Helper/createFormToken', {}, res1 => {
     			if(res1.code == 0){
     				$ax.getAjaxData('Center/addPersonInfoAjax', Object.assign({}, this.formInstance, {
+    					head_img: '头像.jpg',
+		        		card_img: '证件.jpg',
+		        		my_img: '照片.jpg',
     					token_key: res1.data.token_key,
     					token: res1.data.token
     				}), res2 => {
                 		if(res2.code == 0){
+                			this.getIDInfo();
                 			this.modifyData = false;
                 			this.$Message.success('添加成功');
                 		}
@@ -445,26 +473,67 @@ export default {
     		});
     	},
     	
+    	modifyIdinfo(){//修改身份资料
+    		$ax.getAjaxData('Helper/createFormToken', {}, res1 => {
+    			if(res1.code == 0){
+    				$ax.getAjaxData('Center/editPersonInfo', Object.assign({}, this.formInstance, {
+    					token_key: res1.data.token_key,
+    					token: res1.data.token
+    				}), res2 => {
+                		if(res2.code == 0){
+                			this.getIDInfo();
+                			this.modifyData = false;
+                			this.$Message.success('修改成功');
+                		}
+                	});
+    			}
+    		});
+    	},
+    	
+    	getIDInfo(){//获取身份信息
+    		$ax.getAjaxData('Center/personInfoAjax', {}, res => {
+    			if(res.code == 0){
+    				this.identityInfoData = res.data;
+    				for(let item in this.formInstance){
+						for(let item2 in this.identityInfoData){
+							if(item === item2){
+								this.formInstance[item] = this.identityInfoData[item2];
+							}
+						}
+					}
+    			}
+    		});
+    	},
+    	
     	submitIDInfo(name){//提交身份资料
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                	this.setSubmitAjax();
+                	if(!this.identityInfoData){
+                		this.setSubmitAjax();
+                	}else{
+                		this.modifyIdinfo();
+                	}
                 }
             });
     	},
     	
-    	cancelIDInfo(name){//取消修改
+    	modifyBtn(){//修改按钮
+    		this.getIDInfo();
     		this.modifyData = true;
+    	},
+    	
+    	cancelIDInfo(name){//取消修改
     		this.$refs[name].resetFields();
+    		this.modifyData = false;
     	},
     	
     	dateSelect(date){//格式化日期
-    		this.formInstance.brithday = date;
+    		this.formInstance.brithday = new Date(date).getTime()/1000;
     	},
     	
     },
     computed: {//计算属性
-        	
+        
     },
     watch: {//监测数据变化
     	
@@ -476,7 +545,7 @@ export default {
     	
 	},
     mounted () {//模板被渲染完毕之后执行
-    	
+    	console.log(new Date('2018-11-05').getTime()/1000);
 	},
 	
 	//=================组件路由勾子==============================
@@ -488,19 +557,6 @@ export default {
 			//async、await错误处理
 			try {
 				
-				/*
-				 * 
-				 * ------串行执行---------
-				 * console.log(await getAjaxData());
-				 * ...
-				 * 
-				 * ---------并行：将多个promise直接发起请求（先执行async所在函数），然后再进行await操作。（执行效率高、快）----------
-				 * let abc = getAjaxData();//先执行promise函数
-				 * ...
-				 * console.log(await abc);
-				 * ...
-				*/
-				
 				let getMyInfo = await $ax.getAsyncAjaxData('Center/myInfo', {});//获取个人信息
 				
 				let getIdentityInfo = await $ax.getAsyncAjaxData('Center/personInfoAjax', {});//获取身份信息
@@ -510,7 +566,19 @@ export default {
 						vm.myInfoData = getMyInfo.data;
 					}
 					if(getIdentityInfo.code == 0){
-						//vm.identityInfoData = getIdentityInfo.data;
+						if(typeof(getIdentityInfo.data) === 'object'){
+							vm.identityInfoData = getIdentityInfo.data;
+							for(let item in vm.formInstance){
+								for(let item2 in vm.identityInfoData){
+									if(item === item2){
+										vm.formInstance[item] = vm.identityInfoData[item2];
+									}
+								}
+							}
+						}else{
+							vm.identityInfoData = null;
+							vm.modifyData = true;
+						}
 					}
 				});
 				

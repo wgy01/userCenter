@@ -14,7 +14,7 @@
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1",
-    "xw-area": "^1.0.5",
+    "xw-area": "^1.0.7",
     "xw-table": "^0.1.9"
   },
   "devDependencies": {

@@ -12,7 +12,6 @@ import xwTable from 'xw-table';
 
 Vue.use(xwArea);
 Vue.use(xwTable);
-
 Vue.use(iView);
 Vue.config.productionTip = false
 

@@ -1,88 +1,234 @@
 <template>
-	
-	<div>
+
+	<div style="height:100%;background:#ccc;overflow: hidden;">
 		
+		<Card style="width:400px;margin:100px auto 0;">
 		
+			<h1 slot="title">
+				<Icon type="person-add"></Icon>
+				注册
+			</h1>
+			
+			<div>
+				
+				<Form ref="formInline" :model="formInline" :rules="ruleInline" :label-width="100">
+					
+			        <FormItem label="用户名" prop="userName">
+			            <Input type="text" v-model="formInline.userName" placeholder="输入用户名"></Input>
+			        </FormItem>
+			        
+			        <FormItem label="密码" prop="password">
+			            <Input type="password" v-model="formInline.password" placeholder="输入密码"></Input>
+			        </FormItem>
+			        
+			        <FormItem label="确认密码" prop="passwdCheck">
+			            <Input type="password" v-model="formInline.passwdCheck" placeholder="输入确认密码"></Input>
+			        </FormItem>
+			        
+			        <FormItem label="手机号码" prop="mobileNum">
+					    <Input type="text" v-model="formInline.mobileNum" placeholder="输入手机号码"></Input>
+			        </FormItem>
+			        
+			        <FormItem label="邮箱" prop="email">
+			            <Input type="text" v-model="formInline.email" placeholder="输入邮箱"></Input>
+			        </FormItem>
+			        
+			        <FormItem label="短信验证码" prop="code">
+			        	
+			        	<Row>
+			        		
+					        <Col span="13">
+					            <Input type="text" v-model="formInline.code" placeholder="输入短信验证码"></Input>
+					        </Col>
+					        
+					        <Col span="11" style="text-align: right;;">
+		            			<Button :disabled="sendSuccess" type="primary" @click="getCode">
+		            				{{sendSuccess ? S+'s'+' 后重新发送' : '发送短信验证码'}}
+		            			</Button>
+					        </Col>
+					        
+					    </Row>
+					    
+			        </FormItem>
+			        
+			    </Form>
+			    
+			    <div style="text-align: center;">
+		            <Button long type="primary" @click="register('formInline')">立即注册</Button>
+		        </div>
+		        
+		        <div style="margin-top: 16px;text-align: center;">
+		        	<router-link tag="a" to="/login">已有账户立即登录</router-link>
+		        </div>
+				
+			</div>
 		
+		</Card>
+			
 	</div>
 	
 </template>
 
 <script>
-
 export default {
-	name: '',
-	components:{//组件模板
+	name: 'register',
+	components:{//模板
+		
 	},
-	props:{//组件道具（参数）
-		/* ****属性用法*****
-		 * 
-		 * 传递类型 type: Array | Number | String | Object
-		 * 为必传 required: true
-		 * 默认值 default: ''
-		 * 
-		 */
+	props:{
+		
 	},
     data () {//数据
+    	
+    	const validatePass = (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('请输入密码'));
+            } else {
+                if (this.formInline.passwdCheck !== '') {
+                    // 对第二个密码框单独验证
+                    this.$refs.formInline.validateField('passwdCheck');
+                }
+                callback();
+            }
+        };
+        const validatePassCheck = (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('请确认密码'));
+            } else if (value !== this.formInline.password) {
+                callback(new Error('密码不一致!'));
+            } else {
+                callback();
+            }
+        };
+    	
         return {
+        	
+        	formInline: {
+                userName: '',//用户名
+                password: '',//密码
+                passwdCheck: '',//确认密码
+                email: '',//邮箱
+                mobileNum: '',//手机号
+                code: '',//短信验证码
+            },
+            ruleInline: {
+                userName: [
+                    { required: true, message: '请输入用户名', trigger: 'blur' }
+                ],
+                password: [
+                    { required: true, validator: validatePass, trigger: 'blur' }
+                ],
+                passwdCheck: [
+                    { required: true, validator: validatePassCheck, trigger: 'blur' }
+                ],
+                email: [
+                    { required: true, message: '请输入邮箱', trigger: 'blur' }
+                ],
+                mobileNum: [
+                    { required: true, message: '请输入手机号码', trigger: 'blur' }
+                ],
+                code: [
+                    { required: true, required: true, message: '请输入验证码', trigger: 'blur' },
+                ],
+            },
+        	
+        	sendSuccess: false,//发送成功
+        	
+        	S: 60,//时间
         	
         }
     },
     methods: {//方法
     	
+    	radioChange(){
+    		
+    		this.formInline = {
+                userName: '',//用户名
+                password: '',//密码
+                passwdCheck: '',//确认密码
+                email: '',//邮箱
+                mobileNum: '',//手机号
+                code: '',//短信验证码
+           	};
+    		
+    	},
+    	register(name) {
+    		
+            this.$refs[name].validate((valid) => {
+            	
+                if (valid) {
+                	
+                    $ax.getAjaxData('Login/regeditAjax', {
+    					name: this.formInline.userName,
+    					password: this.formInline.password,
+    					mobile: this.formInline.mobileNum,
+    					smscode: this.formInline.code,
+    					email: this.formInline.email,
+					},(response) => {
+						if(response.code == 0){
+							this.$Message.success('注册成功');
+							this.$router.replace({
+								name: 'login'
+							});
+						}
+					});
+                    
+                }
+                
+            })
+            
+        },
+    	getCode(){//获取短信验证码
+    		
+    		this.$axios.post('Login/sendsmsAjax', {
+    			mobile: this.formInline.mobileNum,
+			})
+			.then(response => {
+				
+				if(response.code == 0){
+					
+					this.sendSuccess = true;
+					
+					console.log(response.debug.smscode);
+					
+					this.$Message.success('发送成功');
+					
+					let t = setInterval(() => {
+						
+						--this.S;
+						
+						if(this.S <= 0){
+							clearInterval(t);
+							this.S = 60;
+							this.sendSuccess = false;
+						}
+						
+					},1000);
+					
+				}
+				
+			})
+			.catch(function (error) {
+				console.log(error);
+			});
+			
+    	},
+    	
     },
-    computed: {//计算属性
+    computed:{//计算属性
         	
     },
-    watch: {//监测数据变化
+    created(){//实例被创建完毕之后执行
     	
 	},
-    
-    //===================组件钩子===========================
-    
-    created () {//实例被创建完毕之后执行
+    mounted(){//模板被渲染完毕之后执行
     	
 	},
-    mounted () {//模板被渲染完毕之后执行
-    	
-	},
-	
-	//=================组件路由勾子==============================
-	
-	beforeRouteEnter (to, from, next) {//在组件创建之前调用（放置页面加载时请求的Ajax）
+    watch:{//监测数据变化
 		
-		(async() => {//执行异步函数
-			
-			//async、await错误处理
-			try {
-				
-				/*
-				 * 
-				 * ------串行执行---------
-				 * console.log(await getAjaxData());
-				 * ...
-				 * 
-				 * ---------并行：将多个promise直接发起请求（先执行async所在函数），然后再进行await操作。（执行效率高、快）----------
-				 * let abc = getAjaxData();//先执行promise函数
-				 * ...
-				 * console.log(await abc);
-				 * ...
-				*/
-				next(vm => {
-					
-				});
-				
-			} catch(err) {
-				console.log(err);
-			}
-			
-		})();
-		
-	},
-	
+	}
 }
 </script>
 
 <style scoped lang="less">
-
 </style>

@@ -11,31 +11,50 @@ export const router = new Router({
 
 router.beforeEach((to, from, next) => {//路由跳转前
 	
+	router.app.$Loading.start();//加载进度条
 	
-	
-	
-	//权限
-	if(canTurnTo(routers, window.USE_RACCESS, to.name)){
+	//检测用户登录
+	if(!sessionStorage.userLogin && to.name !== 'login'){//用户未登录
 		
-		if(pathImperfect(routers, to.name)){
+		next({
+			name: 'login'
+		});
+		
+	}else if(sessionStorage.userLogin){//用户已登录
+		
+		if(to.name === 'login'){
 			next({
-				replace: true,
-				name: 'error-401'
+				name: 'home'
 			});
 		}else{
-			next()
+			//权限
+			if(canTurnTo(routers, window.USE_RACCESS, to.name)){
+		
+				if(pathImperfect(routers, to.name)){
+					next({
+						replace: true,
+						name: 'error-401'
+					});
+				}else{
+					next()
+				}
+		
+			}else{
+		
+				next({
+					replace: true,
+					name: 'error-403'
+				});
+		
+			}
 		}
 		
 	}else{
-		
-		next({
-			replace: true,
-			name: 'error-403'
-		});
-		
+		next();
 	}
 	
-	
-	
-	
+});
+
+router.afterEach((to, from) => {//会在任意路由跳转后执行
+	router.app.$Loading.finish();//加载进度条
 });
