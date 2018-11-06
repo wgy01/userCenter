@@ -65,9 +65,7 @@
 			</Row>
 			
 			<div style="text-align: center;">
-				<Button type="primary" v-if="accountEdit" @click="accountEdit = false">保存</Button>
-				&nbsp;
-				&nbsp;
+				<Button type="primary" v-if="accountEdit" @click="accountEdit = false">保存</Button>&nbsp;
 				<Button v-if="accountEdit" @click="accountEdit = false">取消</Button>
 			</div>
 			
@@ -81,29 +79,43 @@
 				<Icon type="md-create" />
 				<span>修改</span>
 			</a>
-			<Form :class="!modifyData ? 'my-form' : ''" ref="formInstance" :model="formInstance" :rules="ruleInline" :label-width="100">
+			
+			<Form :class="!modifyData ? 'my-form' : ''" ref="formInstance" :model="formInstance" :rules="ruleInline" :label-width="80">
 				
-				<Row>
-							
-					<Col v-for="item in formData" :key="item.value" :xs="24" :sm="24" :md="12" :lg="12">
+				<Row :gutter="10">
+					
+					<Col v-for="item in formData" :key="item.value" :xs="24" :sm="!modifyData ? 12 : 24" :md="!modifyData ? 8 : 12" :lg="!modifyData ? 6 : 12">
 						
 						<FormItem v-show="modifyData" :prop="item.value" :label="item.label">
 							<div v-if="modifyData">
 								<Input v-if="item.type == 'text'" v-model="formInstance[item.value]" :placeholder="'输入'+item.label"></Input>
 								<RadioGroup v-if="item.type == 'radio'" v-model="formInstance[item.value]">
 							        <template v-for="selItem in item.select">
-							        	<Radio :label="selItem[0]">{{selItem[1]}}</Radio>
+							        	<Radio :label="selItem.value">{{selItem.label}}</Radio>
 							        </template>
 							    </RadioGroup>
-							    <DatePicker v-if="item.type == 'date'" :value="new Date(parseInt(formInstance[item.value])*1000)" type="date" :placeholder="'输入'+item.label" @on-change="dateSelect" placeholder="选择日期" style="width: 100%;"></DatePicker>
+							    <cascader-area v-if="item.type == 'area'" v-model="formInstance[item.value]"></cascader-area>
+							    <DatePicker v-if="item.type == 'date'" :value="formInstance[item.value] ? new Date(parseInt(formInstance[item.value])*1000) : formInstance[item.value] " type="date" :placeholder="'输入'+item.label" @on-change="dateSelect" placeholder="选择日期" style="width: 100%;"></DatePicker>
 							    <Select v-if="item.type == 'select'" v-model="formInstance[item.value]" :placeholder="'输入'+item.label" style="width:100%">
 							        <Option v-for="selItem in item.select" :value="selItem.value" :key="selItem.value">{{ selItem.label }}</Option>
 							    </Select>
 							</div>
 				        </FormItem>
 				        
-						<FormItem :label="item.label" v-show="identityInfoData && !modifyData">
-							<span v-if="identityInfoData && !modifyData" :style="{color: identityInfoData && identityInfoData[item.value] ? '' : '#c5c8ce'}">{{identityInfoData[item.value]}}</span>
+						<FormItem :label="item.label+' :'" v-show="identityInfoData && !modifyData">
+							<div v-if="identityInfoData && !modifyData" :style="{color: identityInfoData && identityInfoData[item.value] ? '' : '#c5c8ce'}">
+								<p v-if="item.value === 'brithday'">
+									{{getLocalTime(identityInfoData[item.value])}}
+								</p>
+								<div v-else-if="item.select">
+									<p v-for="seleItem in item.select" v-if="seleItem.value === identityInfoData[item.value]">
+										{{seleItem.label}}
+									</p>
+								</div>
+								<p v-else>
+									{{identityInfoData[item.value]}}
+								</p>
+							</div>
 				        </FormItem>
 				        
 				        
@@ -114,9 +126,7 @@
 			</Form>
 			
 			<div v-if="modifyData" style="text-align: center;margin-top: 16px;">
-				<Button v-if="modifyData" type="primary" @click="submitIDInfo('formInstance')">提交</Button>
-				&nbsp;
-				&nbsp;
+				<Button v-if="modifyData" type="primary" @click="submitIDInfo('formInstance')">提交</Button>&nbsp;
 				<Button v-if="identityInfoData && modifyData" @click="cancelIDInfo('formInstance')">取消</Button>
 			</div>
 			
@@ -262,7 +272,16 @@ export default {
         		{
         			label: '性别',
         			value: 'sex',
-        			select: [ ['1', '男'], ['2', '女'] ],
+        			select: [
+        				{
+        					label: '男',
+        					value: '1'
+        				},
+        				{
+        					label: '女',
+        					value: '2'
+        				}
+        			],
         			type: 'radio'
         		},
         		{
@@ -403,7 +422,16 @@ export default {
         		{
         			label: '婚姻状况',
         			value: 'marriage',
-        			select: [ ['1', '已婚'], ['2', '未婚'] ],
+        			select: [
+        				{
+        					label: '已婚',
+        					value: '1'
+        				},
+        				{
+        					label: '未婚',
+        					value: '2'
+        				}
+        			],
         			type: 'radio'
         		},
         		{
@@ -442,6 +470,57 @@ export default {
         	ruleInline: {
         		truest_name: [
         			{ required: true, message: '请输入真实姓名', trigger: 'blur' }
+        		],
+        		sex: [
+        			{ required: true, message: '请选择性别', trigger: 'change' }
+        		],
+        		brithday: [
+        			{ required: true, message: '请选择出生年与', trigger: 'change' }
+        		],
+        		card_type: [
+        			{ required: true, message: '请选择证件类型', trigger: 'change' }
+        		],
+        		card_num: [
+        			{ required: true, message: '请输入证件号', trigger: 'blur' }
+        		],
+        		nation: [
+        			{ required: true, message: '请选择国籍', trigger: 'change' }
+        		],
+        		mz: [
+        			{ required: true, message: '请选择民族', trigger: 'change' }
+        		],
+        		hometown: [
+        			{ required: true, message: '请输入籍贯', trigger: 'blur' }
+        		],
+        		work_phone: [
+        			{ required: true, message: '请输入工作电话', trigger: 'blur' }
+        		],
+        		touch_phone: [
+        			{ required: true, message: '请输入联系电话', trigger: 'blur' }
+        		],
+        		wechat: [
+        			{ required: true, message: '请输入微信', trigger: 'blur' }
+        		],
+        		qq: [
+        			{ required: true, message: '请输入QQ', trigger: 'blur' }
+        		],
+        		address: [
+        			{ required: true, message: '请输入现在住址', trigger: 'blur' }
+        		],
+        		education: [
+        			{ required: true, message: '请选择学历', trigger: 'change' }
+        		],
+        		politics: [
+        			{ required: true, message: '请选择政治面貌', trigger: 'change' }
+        		],
+        		marriage: [
+        			{ required: true, message: '请选择婚姻', trigger: 'change' }
+        		],
+        		height: [
+        			{ required: true, message: '请输入身高', trigger: 'blur' }
+        		],
+        		weigh: [
+        			{ required: true, message: '请输入体重', trigger: 'blur' }
         		],
         	},
         	
@@ -528,8 +607,16 @@ export default {
     	},
     	
     	dateSelect(date){//格式化日期
-    		this.formInstance.brithday = new Date(date).getTime()/1000;
+    		if(date){
+    			this.formInstance.brithday = (new Date(date).getTime()/1000).toString();
+    		}else{
+    			this.formInstance.brithday = '';
+    		}
     	},
+    	
+    	getLocalTime(nS){//时间戳转字符到日期
+			return new Date(parseInt(nS) * 1000).toLocaleString().replace(/\//g, "-").replace(/[上午|下午]([\d\:]*)/g, "");
+		},
     	
     },
     computed: {//计算属性
@@ -545,7 +632,7 @@ export default {
     	
 	},
     mounted () {//模板被渲染完毕之后执行
-    	console.log(new Date('2018-11-05').getTime()/1000);
+    	
 	},
 	
 	//=================组件路由勾子==============================
@@ -566,7 +653,7 @@ export default {
 						vm.myInfoData = getMyInfo.data;
 					}
 					if(getIdentityInfo.code == 0){
-						if(typeof(getIdentityInfo.data) === 'object'){
+						if(typeof(getIdentityInfo.data) == 'object' && Object.prototype.toString.call(getIdentityInfo.data).toLowerCase() == "[object object]" && !getIdentityInfo.data.length){
 							vm.identityInfoData = getIdentityInfo.data;
 							for(let item in vm.formInstance){
 								for(let item2 in vm.identityInfoData){

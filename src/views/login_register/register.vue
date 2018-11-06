@@ -1,72 +1,68 @@
 <template>
 
-	<div style="height:100%;background:#ccc;overflow: hidden;">
-		
-		<Card style="width:400px;margin:100px auto 0;">
-		
-			<h1 slot="title">
-				<Icon type="person-add"></Icon>
-				注册
-			</h1>
-			
-			<div>
-				
-				<Form ref="formInline" :model="formInline" :rules="ruleInline" :label-width="100">
-					
-			        <FormItem label="用户名" prop="userName">
-			            <Input type="text" v-model="formInline.userName" placeholder="输入用户名"></Input>
-			        </FormItem>
-			        
-			        <FormItem label="密码" prop="password">
-			            <Input type="password" v-model="formInline.password" placeholder="输入密码"></Input>
-			        </FormItem>
-			        
-			        <FormItem label="确认密码" prop="passwdCheck">
-			            <Input type="password" v-model="formInline.passwdCheck" placeholder="输入确认密码"></Input>
-			        </FormItem>
-			        
-			        <FormItem label="手机号码" prop="mobileNum">
-					    <Input type="text" v-model="formInline.mobileNum" placeholder="输入手机号码"></Input>
-			        </FormItem>
-			        
-			        <FormItem label="邮箱" prop="email">
-			            <Input type="text" v-model="formInline.email" placeholder="输入邮箱"></Input>
-			        </FormItem>
-			        
-			        <FormItem label="短信验证码" prop="code">
-			        	
-			        	<Row>
-			        		
-					        <Col span="13">
-					            <Input type="text" v-model="formInline.code" placeholder="输入短信验证码"></Input>
-					        </Col>
-					        
-					        <Col span="11" style="text-align: right;;">
-		            			<Button :disabled="sendSuccess" type="primary" @click="getCode">
-		            				{{sendSuccess ? S+'s'+' 后重新发送' : '发送短信验证码'}}
-		            			</Button>
-					        </Col>
-					        
-					    </Row>
-					    
-			        </FormItem>
-			        
-			    </Form>
-			    
-			    <div style="text-align: center;">
-		            <Button long type="primary" @click="register('formInline')">立即注册</Button>
-		        </div>
-		        
-		        <div style="margin-top: 16px;text-align: center;">
-		        	<router-link tag="a" to="/login">已有账户立即登录</router-link>
-		        </div>
-				
-			</div>
-		
-		</Card>
-			
-	</div>
+	<Card style="width:380px;height:430px;position: absolute;margin:auto;top:0;bottom:0;right:200px;">
 	
+		<h1 slot="title">
+			<Icon type="person-add"></Icon>
+			注册
+		</h1>
+		
+		<div>
+			
+			<Form ref="formInline" :model="formInline" :rules="ruleInline" :label-width="85">
+				
+		        <FormItem label="用户名" prop="userName">
+		            <Input type="text" v-model="formInline.userName" placeholder="输入用户名"></Input>
+		        </FormItem>
+		        
+		        <FormItem label="密码" prop="password">
+		            <Input type="password" v-model="formInline.password" placeholder="输入密码"></Input>
+		        </FormItem>
+		        
+		        <FormItem label="确认密码" prop="passwdCheck">
+		            <Input type="password" v-model="formInline.passwdCheck" placeholder="输入确认密码"></Input>
+		        </FormItem>
+		        
+		        <FormItem label="手机号码" prop="mobileNum">
+				    <Input type="text" v-model="formInline.mobileNum" placeholder="输入手机号码"></Input>
+		        </FormItem>
+		        
+		        <!--<FormItem label="邮箱" prop="email">
+		            <Input type="text" v-model="formInline.email" placeholder="输入邮箱"></Input>
+		        </FormItem>-->
+		        
+		        <FormItem label="短信验证码" prop="code">
+		        	
+		        	<Row type="flex">
+		        		
+				        <Col span="11">
+				            <Input type="text" v-model="formInline.code" placeholder="输入短信验证码"></Input>
+				        </Col>
+				        
+				        <Col span="13" style="padding-left: 6px;">
+	            			<Button :disabled="sendSuccess" long type="success" @click="getCode">
+	            				{{sendSuccess ? S+'s'+' 后重新发送' : '发送短信验证码'}}
+	            			</Button>
+				        </Col>
+				        
+				    </Row>
+				    
+		        </FormItem>
+		        
+		    </Form>
+		    
+		    <div style="text-align: center;">
+	            <Button long type="primary" @click="register('formInline')">立即注册</Button>
+	        </div>
+	        
+	        <div style="margin-top: 16px;text-align: center;">
+	        	<a href="javascript:void(0)" @click="skipLogin">已有账户立即登录</a>
+	        </div>
+			
+		</div>
+	
+	</Card>
+			
 </template>
 
 <script>
@@ -107,7 +103,7 @@ export default {
                 userName: '',//用户名
                 password: '',//密码
                 passwdCheck: '',//确认密码
-                email: '',//邮箱
+//              email: '',//邮箱
                 mobileNum: '',//手机号
                 code: '',//短信验证码
             },
@@ -140,18 +136,6 @@ export default {
     },
     methods: {//方法
     	
-    	radioChange(){
-    		
-    		this.formInline = {
-                userName: '',//用户名
-                password: '',//密码
-                passwdCheck: '',//确认密码
-                email: '',//邮箱
-                mobileNum: '',//手机号
-                code: '',//短信验证码
-           	};
-    		
-    	},
     	register(name) {
     		
             this.$refs[name].validate((valid) => {
@@ -163,13 +147,11 @@ export default {
     					password: this.formInline.password,
     					mobile: this.formInline.mobileNum,
     					smscode: this.formInline.code,
-    					email: this.formInline.email,
+//  					email: this.formInline.email,
 					},(response) => {
 						if(response.code == 0){
+							this.$parent.showType = 'login';
 							this.$Message.success('注册成功');
-							this.$router.replace({
-								name: 'login'
-							});
 						}
 					});
                     
@@ -179,13 +161,10 @@ export default {
             
         },
     	getCode(){//获取短信验证码
-    		
-    		this.$axios.post('Login/sendsmsAjax', {
+    		$ax.getAjaxData('Login/sendsmsAjax', {
     			mobile: this.formInline.mobileNum,
-			})
-			.then(response => {
-				
-				if(response.code == 0){
+			}, res => {
+				if(res.code == 0){
 					
 					this.sendSuccess = true;
 					
@@ -206,12 +185,11 @@ export default {
 					},1000);
 					
 				}
-				
-			})
-			.catch(function (error) {
-				console.log(error);
 			});
-			
+    	},
+    	
+    	skipLogin(){//去登录
+    		this.$parent.showType = 'login';
     	},
     	
     },
