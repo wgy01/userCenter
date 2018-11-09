@@ -9,7 +9,59 @@
 				<Button type="primary" size="small" style="margin-left: 10px;" @click="addShow = true">创建公司</Button>
 			</div>
 			
-			<xw-table :tableColumns="tableColumns" :tableData="tableData"></xw-table>
+			<xw-table
+			:modalTitle="modalTitle"
+			@on-btn-click="tabBtnClick"
+			:tableColumns="tableColumns"
+			:tableData="tableData">
+				<div slot="modalContent">
+					<Form v-if="showType === 'details'" class="my-form" :label-width="80">
+						<Row>
+							<Col v-for="item in companyField" :key="item.value" :xs="24" :sm="12" :md="8" :lg="6">
+								<FormItem :label="item.label+'：'">
+										<div v-if="item.select">
+											<p v-for="seleItem in item.select" v-if="seleItem.value == companyInfo[item.value]">
+												{{seleItem.label}}
+											</p>
+										</div>
+										<p v-else>
+											{{companyInfo[item.value]}}
+										</p>
+						        </FormItem>
+					        </Col>
+						</Row>
+					</Form>
+					<Form v-if="showType === 'edit'" ref="formInstance2" :model="formData2" :rules="ruleData" :label-width="70">
+						<Row :gutter="16">
+							<Col :xs="24" :sm="24" :md="12" :lg="12">
+								<FormItem label="公司名称" prop="name">
+									<Input v-model="formData2.name"></Input>
+						        </FormItem>
+						        <FormItem label="公司行业" prop="industry">
+						        	<Cascader :data="industryData" v-model="formData2.industry"></Cascader>
+						        </FormItem>
+						        <FormItem label="国家" prop="nation">
+									<Select v-model="formData2.nation" style="width:100%">
+								        <Option value="86">中国</Option>
+								        <Option value="87">美国</Option>
+								    </Select>
+						        </FormItem>
+							</Col>
+							<Col :xs="24" :sm="24" :md="12" :lg="12">
+								<FormItem label="公司地址" prop="address">
+									<cascader-area v-model="formData2.address"></cascader-area>
+						        </FormItem>
+								<FormItem label="企业官网" prop="website">
+									<Input v-model="formData2.website"></Input>
+						        </FormItem>
+						        <FormItem label="主营业务" prop="business">
+									<Input v-model="formData2.business"></Input>
+						        </FormItem>
+							</Col>
+						</Row>
+					</Form>
+				</div>
+			</xw-table>
 			
 		</Card>
 		
@@ -91,7 +143,22 @@ export default {
         	
         	addShow: false,
         	
+        	modalTitle: '',
+        	
+        	showType: null,
+        	
+        	companyInfo: {},//公司信息
+        	
         	formData: {
+        		name: '',//公司名称
+        		industry: [],//公司行业
+        		nation: '86',//国家
+        		address: [],//公司地址
+        		website: '',//企业官网
+        		business: '',//主营业务
+        	},
+        	
+        	formData2: {
         		name: '',//公司名称
         		industry: [],//公司行业
         		nation: '86',//国家
@@ -134,6 +201,49 @@ export default {
         		}
         	],
         	
+        	companyField: [
+        		{
+        			label: '公司名称',
+        			value: 'name'
+        		},
+        		{
+        			label: '公司行业',
+        			value: 'industry',
+        			select: ['hx1', 'hx2']
+        		},
+        		{
+        			label: '国家',
+        			value: 'nation',
+        			select: [
+        				{
+        					label: '中国',
+        					value: '80'
+        				},
+        				{
+        					label: '美国',
+        					value: '81'
+        				},
+        				{
+        					label: '英国',
+        					value: '82'
+        				},
+        			]
+        		},
+        		{
+        			label: '公司地址',
+        			value: 'address',
+        			select: ['provice', 'city', 'county']
+        		},
+        		{
+        			label: '企业官网',
+        			value: 'website'
+        		},
+        		{
+        			label: '主营业务',
+        			value: 'business'
+        		},
+        	],
+        	
         	tableColumns: [
                 {
                     title: 'ID',
@@ -143,6 +253,23 @@ export default {
                     title: '名称',
                     key: 'name'
                 },
+                {
+    				align: 'center',
+    				width: 130,
+    				title: '操作',
+    				handle: [
+    					{
+    						name: '详情',
+    						key: 'details',
+    						modalShow: true,
+    					},
+    					{
+    						name: '编辑',
+    						key: 'edit',
+    						modalShow: true,
+    					},
+    				],
+    			}
             ],
             
             tableData: [],
@@ -150,6 +277,25 @@ export default {
         }
     },
     methods: {//方法
+    	
+    	tabBtnClick(val){
+    		this.modalTitle = val.params.row.name +'（'+ val.name +'）';
+    		if(val.key === 'details'){//详情
+    			this.companyInfo = val.params.row;
+    			this.showType = val.key;
+    		}else if(val.key === 'edit'){//编辑
+    			this.formData2 = {
+	        		name: val.params.row.name,//公司名称
+	        		industry: [val.params.row.hx1, val.params.row.hx2],//公司行业
+	        		nation: val.params.row.nation,//国家
+	        		address: [val.params.row.provice, val.params.row.city, val.params.row.county],//公司地址
+	        		website: val.params.row.website,//企业官网
+	        		business: val.params.row.business,//主营业务
+	        	};
+	        	this.showType = val.key;
+    			console.log(val);
+    		}
+    	},
     	
     	setSubmitAjax(){//设置提交数据
     		$ax.getAjaxData('Helper/createFormToken', {}, res1 => {//获取表单toKen
@@ -251,5 +397,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-
+	.my-form .ivu-form-item{
+		margin-bottom: 0px !important;
+	}
 </style>
