@@ -64,7 +64,7 @@
 			<Sider ref="siderInstance" hide-trigger collapsible :collapsed-width="64" v-model="isCollapsed" style="height: 100vh;">
 				<div class="tx-box">
 					<Avatar :class="isCollapsed ? 'img-small' : 'img-large'" />
-					<p v-show="!isCollapsed" class="txt">Admin</p>
+					<p v-show="!isCollapsed" class="txt">{{userName}}</p>
 				</div>
 				<menu-sider ref='sideMenu' :menuList="menuList" :isCollapsed="isCollapsed"></menu-sider>
 			</Sider>
@@ -127,6 +127,8 @@ export default {
 	},
 	data() { //数据
 		return {
+			
+			userName: sessionStorage.userName || '未登录',
 			
 			isCollapsed: false,
 			

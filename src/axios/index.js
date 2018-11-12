@@ -80,8 +80,12 @@ axios.interceptors.response.use(
 		
 		if(_res.data.code){
 			
-			if(_res.data.code != 0){
+			if(_res.data.code != 0 && _res.data.code != 9){
 				vm.$Message.warning(_res.data.msg);
+			}
+			
+			if(_res.data.code == 9){//未登录
+				sessionStorage.removeItem('userLogin');
 			}
 			
 		}

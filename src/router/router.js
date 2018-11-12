@@ -19,7 +19,15 @@ export default [
 	    meta: {
 	      hideMenu: true,
 	    },
-	    component: () => import('@/views/login_register/login_register.vue')
+	    component: () => import('@/views/login_register/login.vue')
+	},
+	{
+	    path: '/register',
+	    name: 'register',
+	    meta: {
+	      hideMenu: true,
+	    },
+	    component: () => import('@/views/login_register/register.vue')
 	},
 	{
 		path: '/',

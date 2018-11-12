@@ -14,11 +14,13 @@ router.beforeEach((to, from, next) => {//路由跳转前
 	router.app.$Loading.start();//加载进度条
 	
 	//检测用户登录
-	if(!sessionStorage.userLogin && to.name !== 'login'){//用户未登录
+	if(!sessionStorage.userLogin && to.name !== 'login' && to.name !== 'register'){//用户未登录
 		
 		next({
 			name: 'login'
 		});
+		
+		router.app.$Loading.finish();//加载进度条
 		
 	}else if(sessionStorage.userLogin){//用户已登录
 		

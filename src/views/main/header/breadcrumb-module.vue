@@ -32,14 +32,14 @@
 		</div>
 		
 		<div style="margin: 0 46px 0 auto;flex-shrink: 0;">
-			<Dropdown placement="bottom-end">
+			<Dropdown :transfer="true" trigger="click" @on-click="dropdownClick" placement="bottom-end">
 		        <a style="display: inline-block;">
 	           		<!--<Avatar class="tx" />-->
 	           		<Icon type="ios-keypad" size="24" color="#5C6B77" />
 	           		<Icon size="20" type="md-arrow-dropdown" />
 		        </a>
 		        <DropdownMenu slot="list">
-		            <DropdownItem>退出登录</DropdownItem>
+		            <DropdownItem name="logout">退出登录</DropdownItem>
 		        </DropdownMenu>
 		    </Dropdown>
         </div>
@@ -49,7 +49,6 @@
 </template>
 
 <script>
-
 export default {
 	name: 'breadcrumbModule',
 	components: { //组件模板
@@ -76,6 +75,23 @@ export default {
 		
 		collapsedSider() {
 			this.$emit('clickIcon');
+		},
+		
+		dropdownClick(name){
+			
+			if(name === 'logout'){//退出登录
+				$ax.getAjaxData('Center/logout', {}, res => {
+					if(res.code == 0){
+						sessionStorage.removeItem('userLogin');
+						sessionStorage.removeItem('userName');
+						this.$router.push({
+							name: 'login'
+						});
+						this.$Message.success('退出成功');
+					}
+				});
+			}
+			
 		},
 		
 	},

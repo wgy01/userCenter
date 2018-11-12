@@ -1,67 +1,71 @@
 <template>
-
-	<Card style="width:380px;height:430px;position: absolute;margin:auto;top:0;bottom:0;right:200px;">
 	
-		<h1 slot="title">
-			<Icon type="person-add"></Icon>
-			注册
-		</h1>
+	<div style="background:#ccc;height:100%;position: relative;">
+	
+		<Card style="width:380px;height:430px;position: absolute;margin:auto;top:0;bottom:0;right:200px;">
 		
-		<div>
+			<h1 slot="title">
+				<Icon type="person-add"></Icon>
+				注册
+			</h1>
 			
-			<Form ref="formInline" :model="formInline" :rules="ruleInline" :label-width="85">
+			<div>
 				
-		        <FormItem label="用户名" prop="userName">
-		            <Input type="text" v-model="formInline.userName" placeholder="输入用户名"></Input>
-		        </FormItem>
+				<Form ref="formInline" :model="formInline" :rules="ruleInline" :label-width="85">
+					
+			        <FormItem label="用户名" prop="userName">
+			            <Input type="text" v-model="formInline.userName" placeholder="输入用户名"></Input>
+			        </FormItem>
+			        
+			        <FormItem label="密码" prop="password">
+			            <Input type="password" v-model="formInline.password" placeholder="输入密码"></Input>
+			        </FormItem>
+			        
+			        <FormItem label="确认密码" prop="passwdCheck">
+			            <Input type="password" v-model="formInline.passwdCheck" placeholder="输入确认密码"></Input>
+			        </FormItem>
+			        
+			        <FormItem label="手机号码" prop="mobileNum">
+					    <Input type="text" v-model="formInline.mobileNum" placeholder="输入手机号码"></Input>
+			        </FormItem>
+			        
+			        <!--<FormItem label="邮箱" prop="email">
+			            <Input type="text" v-model="formInline.email" placeholder="输入邮箱"></Input>
+			        </FormItem>-->
+			        
+			        <FormItem label="短信验证码" prop="code">
+			        	
+			        	<Row type="flex">
+			        		
+					        <Col span="11">
+					            <Input type="text" v-model="formInline.code" placeholder="输入短信验证码"></Input>
+					        </Col>
+					        
+					        <Col span="13" style="padding-left: 6px;">
+		            			<Button :disabled="sendSuccess" long type="success" @click="getCode">
+		            				{{sendSuccess ? S+'s'+' 后重新发送' : '发送短信验证码'}}
+		            			</Button>
+					        </Col>
+					        
+					    </Row>
+					    
+			        </FormItem>
+			        
+			    </Form>
+			    
+			    <div style="text-align: center;">
+		            <Button long type="primary" @click="register('formInline')">立即注册</Button>
+		        </div>
 		        
-		        <FormItem label="密码" prop="password">
-		            <Input type="password" v-model="formInline.password" placeholder="输入密码"></Input>
-		        </FormItem>
-		        
-		        <FormItem label="确认密码" prop="passwdCheck">
-		            <Input type="password" v-model="formInline.passwdCheck" placeholder="输入确认密码"></Input>
-		        </FormItem>
-		        
-		        <FormItem label="手机号码" prop="mobileNum">
-				    <Input type="text" v-model="formInline.mobileNum" placeholder="输入手机号码"></Input>
-		        </FormItem>
-		        
-		        <!--<FormItem label="邮箱" prop="email">
-		            <Input type="text" v-model="formInline.email" placeholder="输入邮箱"></Input>
-		        </FormItem>-->
-		        
-		        <FormItem label="短信验证码" prop="code">
-		        	
-		        	<Row type="flex">
-		        		
-				        <Col span="11">
-				            <Input type="text" v-model="formInline.code" placeholder="输入短信验证码"></Input>
-				        </Col>
-				        
-				        <Col span="13" style="padding-left: 6px;">
-	            			<Button :disabled="sendSuccess" long type="success" @click="getCode">
-	            				{{sendSuccess ? S+'s'+' 后重新发送' : '发送短信验证码'}}
-	            			</Button>
-				        </Col>
-				        
-				    </Row>
-				    
-		        </FormItem>
-		        
-		    </Form>
-		    
-		    <div style="text-align: center;">
-	            <Button long type="primary" @click="register('formInline')">立即注册</Button>
-	        </div>
-	        
-	        <div style="margin-top: 16px;text-align: center;">
-	        	<a href="javascript:void(0)" @click="skipLogin">已有账户立即登录</a>
-	        </div>
-			
-		</div>
+		        <div style="margin-top: 16px;text-align: center;">
+		        	<a href="javascript:void(0)" @click="skipLogin">已有账户立即登录</a>
+		        </div>
+				
+			</div>
+		
+		</Card>
 	
-	</Card>
+	</div>
 			
 </template>
 
@@ -189,7 +193,9 @@ export default {
     	},
     	
     	skipLogin(){//去登录
-    		this.$parent.showType = 'login';
+    		this.$router.push({
+    			name: 'login'
+    		});
     	},
     	
     },

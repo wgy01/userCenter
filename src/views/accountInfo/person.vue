@@ -20,6 +20,14 @@
 	.my-form .ivu-form-item{
 		margin-bottom: 0px;
 	}
+	.work{
+		display: flex;
+		align-items: center;
+		padding: 6px 0;
+		.work-piece{
+			margin-right: 20px;
+		}
+	}
 </style>
 
 <template>
@@ -28,11 +36,11 @@
 		
 		<Card style="margin-bottom: 16px;">
 		
-			<h1 slot="title">账户资料</h1>
+			<h1 slot="title">账户信息</h1>
 			
 			<!--<a slot="extra" @click="modifyAccount" v-if="!accountEdit">
 				<Icon type="md-create" />
-				<span>编辑</span>
+				<span>修改</span>
 			</a>-->
 			
 			<Row style="flex-wrap: nowrap;" type="flex" >
@@ -95,7 +103,7 @@
 							        </template>
 							    </RadioGroup>
 							    <cascader-area v-if="item.type == 'area'" v-model="formInstance[item.value]"></cascader-area>
-							    <DatePicker v-if="item.type == 'date'" :value="formInstance[item.value] ? new Date(parseInt(formInstance[item.value])*1000) : formInstance[item.value] " type="date" :placeholder="'输入'+item.label" @on-change="dateSelect" placeholder="选择日期" style="width: 100%;"></DatePicker>
+							    <DatePicker v-if="item.type == 'date'" :value="formInstance[item.value] ? new Date(parseInt(formInstance[item.value])*1000) : formInstance[item.value]" type="date" :placeholder="'输入'+item.label" @on-change="dateSelect" placeholder="选择日期" style="width: 100%;"></DatePicker>
 							    <Select v-if="item.type == 'select'" v-model="formInstance[item.value]" :placeholder="'输入'+item.label" style="width:100%">
 							        <Option v-for="selItem in item.select" :value="selItem.value" :key="selItem.value">{{ selItem.label }}</Option>
 							    </Select>
@@ -138,99 +146,138 @@
 			
 			<a slot="extra">
 				<Icon type="md-create" />
-				<span>编辑</span>
+				<span>修改</span>
 			</a>
 			
-			<Card :bordered="false" dis-hover style="margin-bottom: 16px;">
+			<Form>
 				
-				<h2 slot="title">兴趣爱好</h2>
+				<Divider orientation="left">兴趣爱好</Divider>
 				
+		        <FormItem>
+		        	<Input type="textarea"></Input>
+		        </FormItem>
 				
-				<Form>
-			        <FormItem>
-			        	<Input type="textarea"></Input>
+				<Divider orientation="left">个人特长</Divider>
+				
+		        <FormItem>
+		        	<Input type="textarea"></Input>
+		        </FormItem>
+				
+				<Divider orientation="left">饮食习惯</Divider>
+				
+				<FormItem>
+					<CheckboxGroup>
+				        <Checkbox label="东北菜"></Checkbox>
+				        <Checkbox label="湖北菜"></Checkbox>
+				        <Checkbox label="广东菜"></Checkbox>
+				        <Checkbox label="口味偏辣"></Checkbox>
+				    </CheckboxGroup>
+			    </FormItem>
+				
+				<Divider orientation="left">家庭情况</Divider>
+				
+				<FormItem>
+					<CheckboxGroup>
+				        <Checkbox label="父亲"></Checkbox>
+				        <Checkbox label="母亲"></Checkbox>
+				        <Checkbox label="妻子"></Checkbox>
+				        <Checkbox label="女儿"></Checkbox>
+				    </CheckboxGroup>
+			    </FormItem>
+				
+				<Divider orientation="left">工作经历</Divider>
+				
+				<xw-table
+				:headerShow="false"
+				:footerShow="false"
+				:tableColumns="tableColumnsWork"
+				:tableData="workExperienceData">
+				</xw-table>
+				
+				<!--<Row v-for="item in workExperienceData" style="padding: 6px;">
+					<Col span="8">
+						<label>时间：</label>
+						<Tag>{{item.begin_time}} — {{item.end_time}}</Tag>
+					</Col>
+					<Col span="4">
+						<label>单位：</label>
+						<Tag>{{item.company}}</Tag>
+					</Col>
+					<Col span="4">
+						<label>职务：</label>
+						<Tag>{{item.duty}}</Tag>
+					</Col>
+					<Col span="4">
+						<label>状况：</label>
+						<Tag>{{item.statue}}</Tag>
+					</Col>
+				</Row>-->
+				
+				<div style="text-align: center;margin-top: 16px;">
+					<Button @click="modalShow = true;showType = 1">添加工作经历</Button>
+				</div>
+				
+				<Divider orientation="left">教育经历</Divider>
+				
+				<xw-table
+				:headerShow="false"
+				:footerShow="false"
+				:tableColumns="tableColumnsEducation"
+				:tableData="educationData">
+				</xw-table>
+				
+				<!--<div class="work" v-for="item in educationData">
+					<div class="work-piece">
+						<label>时间：</label>
+						<Tag>{{item.begin_time}} — {{item.end_time}}</Tag>
+					</div>
+					<div class="work-piece">
+						<label>学校：</label>
+						<Tag>{{item.school}}</Tag>
+					</div>
+				</div>-->
+				
+				<div style="text-align: center;margin-top: 16px;">
+					<Button @click="modalShow = true;showType = 2">添加教育经历</Button>
+				</div>
+				
+			</Form>
+			
+			<Modal v-model="modalShow" @on-visible-change="modelChange" width="400">
+				
+		        <p slot="header">{{modalTitle}}</p>
+		        
+		        <Form ref="formExperience" :model="formExperienceData" :rules="ruleExperienceData" :label-width="50">
+			        <FormItem label="时间" prop="time">
+			        	<DatePicker :value="datePickerValue" @on-change="datePickerChange" @on-clear="datePickerClear" type="daterange" placeholder="选择时间" style="width: 100%"></DatePicker>
 			        </FormItem>
+		        	<div v-if="showType == 1">
+				        <FormItem label="单位" prop="company">
+				        	<Input v-model="formExperienceData.company" placeholder="输入单位名称"></Input>
+				        </FormItem>
+				        <FormItem label="职务" prop="duty">
+				        	<Input v-model="formExperienceData.duty" placeholder="输入职务名称"></Input>
+				        </FormItem>
+				        <FormItem label="状况" prop="status">
+				        	<RadioGroup v-model="formExperienceData.status">
+						        <Radio label="1">已离职</Radio>
+						        <Radio label="2">在岗</Radio>
+						    </RadioGroup>
+				        </FormItem>
+		        	</div>
+			        <div v-if="showType == 2">
+				        <FormItem label="学校" prop="school">
+				        	<Input v-model="formExperienceData.school" placeholder="输入学校名称"></Input>
+				        </FormItem>
+			        </div>
 			    </Form>
-				
-			</Card>
-			
-			<Card :bordered="false" dis-hover style="margin-bottom: 16px;">
-				
-				<h2 slot="title">个人特长</h2>
-				
-				<Form>
-			        <FormItem>
-			        	<Input type="textarea"></Input>
-			        </FormItem>
-			    </Form>
-				
-			</Card>
-			
-			<Card :bordered="false" dis-hover style="margin-bottom: 16px;">
-				
-				<h2 slot="title">饮食习惯</h2>
-				
-				<CheckboxGroup>
-			        <Checkbox label="东北菜"></Checkbox>
-			        <Checkbox label="湖北菜"></Checkbox>
-			        <Checkbox label="广东菜"></Checkbox>
-			        <Checkbox label="口味偏辣"></Checkbox>
-			    </CheckboxGroup>
-						
-			</Card>
-			
-			<Card :bordered="false" dis-hover style="margin-bottom: 16px;">
-				
-				<h2 slot="title">家庭情况</h2>
-				
-				<CheckboxGroup>
-			        <Checkbox label="父亲"></Checkbox>
-			        <Checkbox label="母亲"></Checkbox>
-			        <Checkbox label="妻子"></Checkbox>
-			        <Checkbox label="女儿"></Checkbox>
-			    </CheckboxGroup>
-						
-			</Card>
-			
-			<Card :bordered="false" dis-hover style="margin-bottom: 16px;">
-				
-				<h2 slot="title">工作经历</h2>
-				
-				<Form :label-width="40">
-			        <FormItem label="时间">
-			        	<DatePicker type="daterange" placeholder="Select date" style="width: 200px"></DatePicker>
-			        </FormItem>
-			        <FormItem label="单位">
-			        	<Input></Input>
-			        </FormItem>
-			        <FormItem label="职务">
-			        	<Input></Input>
-			        </FormItem>
-			        <FormItem label="状况">
-			        	<RadioGroup>
-					        <Radio label="已离职"></Radio>
-					        <Radio label="在岗"></Radio>
-					    </RadioGroup>
-			        </FormItem>
-			    </Form>
-				
-			</Card>
-			
-			<Card :bordered="false" dis-hover style="margin-bottom: 16px;">
-				
-				<h2 slot="title">教育经历</h2>
-				
-				<Form :label-width="40">
-			        <FormItem label="时间">
-			        	<DatePicker type="daterange" placeholder="Select date" style="width: 200px"></DatePicker>
-			        </FormItem>
-			        <FormItem label="学校">
-			        	<Input></Input>
-			        </FormItem>
-			    </Form>
-						
-			</Card>
-			
+			    
+		        <div slot="footer">
+		            <Button type="primary" @click="addBtn('formExperience')">添加</Button>
+		            <Button @click="modalShow = false">取消</Button>
+		        </div>
+		    </Modal>
+		    
 		</Card>
 		
 	</div>
@@ -254,6 +301,40 @@ export default {
 	},
     data () {//数据
         return {
+        	
+        	workExperienceData: [],//工作经历数据
+        	
+			educationData: [],//教育经历数据
+        	
+        	formExperienceData: {
+        		time: [],//时间
+        		company: '',//单位
+        		duty: '',//职务
+        		status: '',//状态
+        		school: '',//学校名称
+        	},
+        	
+        	ruleExperienceData: {
+        		time: [
+        			{ type: 'array', required: true, message: '请选择时间', trigger: 'change' }
+        		],
+        		company: [
+        			{ required: true, message: '请输入单位名称', trigger: 'blur' }
+        		],
+        		duty: [
+        			{ required: true, message: '请输入职务名称', trigger: 'blur' }
+        		],
+        		status: [
+        			{ required: true, message: '请选择状态', trigger: 'change' }
+        		],
+        		school: [
+        			{ required: true, message: '请输入学校名称', trigger: 'blur' }
+        		],
+        	},
+        	
+        	showType: 0,//经历表单显示类型
+        	
+        	modalShow: false,//经历表单对话框
         	
         	accountEdit: false,
         	
@@ -524,6 +605,44 @@ export default {
         		],
         	},
         	
+        	tableColumnsWork: [
+        		{
+                    title: '开始时间',
+                    key: 'begin_time'
+                },
+        		{
+                    title: '结束时间',
+                    key: 'end_time'
+                },
+        		{
+                    title: '单位',
+                    key: 'company'
+                },
+        		{
+                    title: '职务',
+                    key: 'duty'
+                },
+        		{
+                    title: '状态',
+                    key: 'statue'
+                },
+        	],
+        	
+        	tableColumnsEducation: [
+        		{
+                    title: '开始时间',
+                    key: 'begin_time'
+                },
+        		{
+                    title: '结束时间',
+                    key: 'end_time'
+                },
+        		{
+                    title: '学校',
+                    key: 'school'
+                },
+        	],
+        	
         }
     },
     methods: {//方法
@@ -614,13 +733,104 @@ export default {
     		}
     	},
     	
+    	modelChange(tf){//对话框变化时触发
+    		this.$refs['formExperience'].resetFields();
+    	},
+    	
+    	workExperienceAjax(token_key, token){//工作经历提交数据
+    		$ax.getAjaxData('Center/workAdd', {
+    			begin_time: this.formExperienceData.time[0],
+    			end_time: this.formExperienceData.time[1],
+    			company: this.formExperienceData.company,
+    			duty: this.formExperienceData.duty,
+    			status: this.formExperienceData.status,
+    			token_key: token_key,
+    			token: token,
+    		}, res => {
+    			if(res.code == 0){
+    				this.$refs['formExperience'].resetFields();
+    				this.modalShow = false;
+    				this.$Message.success('工作经历添加成功');
+    			}
+    		});
+    	},
+    	
+    	educationExperienceAjax(token_key, token){//教育经历提交数据
+    		$ax.getAjaxData('Center/educationAdd', {
+    			begin_time: this.formExperienceData.time[0],
+    			end_time: this.formExperienceData.time[1],
+    			school: this.formExperienceData.school,
+    			token_key: token_key,
+    			token: token,
+    		}, res => {
+    			if(res.code == 0){
+    				this.$refs['formExperience'].resetFields();
+    				this.modalShow = false;
+    				this.$Message.success('教育经历添加成功');
+    			}
+    		});
+    	},
+    	
+    	addBtn(name){//添加工作经历和教育经历
+    		this.$refs[name].validate((valid) => {
+    			if(valid){
+    				
+    				$ax.getAjaxData('Helper/createFormToken', {}, res => {
+    					if(res.code == 0){
+    						if(this.showType == 1){
+		    					this.workExperienceAjax(res.data.token_key, res.data.token);
+		    				}else if(this.showType == 2){
+		    					this.educationExperienceAjax(res.data.token_key, res.data.token);
+		    				}
+    					}
+    				});
+    				
+    			}
+    		});
+    	},
+    	
+    	datePickerChange(val){//工作经历和教育经历时间改变时
+    		if(val[0] != '' && val[0] != ''){
+    			let a = (new Date(val[0]).getTime()/1000).toString();
+    			let b = (new Date(val[1]).getTime()/1000).toString();
+    			this.formExperienceData.time = [a, b];
+    		}else{
+    			this.formExperienceData.time = [];
+    		}
+    	},
+    	
+    	datePickerClear(){//工作经历和教育经历时间清空时
+    		this.formExperienceData.time = [];
+    	},
+    	
     	getLocalTime(nS){//时间戳转字符到日期
 			return new Date(parseInt(nS) * 1000).toLocaleString().replace(/\//g, "-").replace(/[上午|下午]([\d\:]*)/g, "");
 		},
-    	
+		
     },
     computed: {//计算属性
-        
+    	
+        modalTitle(){
+        	let txt = '';
+			if(this.showType == 1){
+				txt = '添加工作经历';
+			}else if(this.showType == 2){
+				txt = '添加教育经历';
+			}
+			return txt;
+		},
+		
+		datePickerValue(){
+			let arr = [];
+			if(this.formExperienceData.time.length > 0){
+				let a = new Date(parseInt(this.formExperienceData.time[0])*1000);
+				let b = new Date(parseInt(this.formExperienceData.time[1])*1000);
+				arr[0] = a;
+				arr[1] = b;
+			}
+			return arr;
+		},
+		
     },
     watch: {//监测数据变化
     	
@@ -648,6 +858,10 @@ export default {
 				
 				let getIdentityInfo = await $ax.getAsyncAjaxData('Center/personInfoAjax', {});//获取身份信息
 				
+				let getWorkExperience = await $ax.getAsyncAjaxData('Center/workList', {});//获取工作经历
+				
+				let getEducation = await $ax.getAsyncAjaxData('Center/educationList', {});//获取教育经历
+				
 				next(vm => {
 					if(getMyInfo.code == 0){
 						vm.myInfoData = getMyInfo.data;
@@ -667,12 +881,19 @@ export default {
 							vm.modifyData = true;
 						}
 					}
+					if(getWorkExperience.code == 0){
+						vm.workExperienceData = getWorkExperience.data;
+					}
+					if(getEducation.code == 0){
+						vm.educationData = getEducation.data;
+					}
 				});
 				
 			} catch(err) {
 				console.log(err);
-				next();
 			}
+			
+			next();
 			
 		})();
 		
