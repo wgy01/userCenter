@@ -34,7 +34,9 @@
 	
 	<div>
 		
-		<Card style="margin-bottom: 16px;">
+		<!----------------------------------------账户信息--------------------------------------------->
+		
+		<Card :shadow="true" style="margin-bottom: 16px;">
 		
 			<h1 slot="title">账户信息</h1>
 			
@@ -79,7 +81,9 @@
 			
 		</Card>
 		
-		<Card style="margin-bottom: 16px;">
+		<!----------------------------------------身份资料--------------------------------------------->
+		
+		<Card :shadow="true" style="margin-bottom: 16px;">
 			
 			<h1 slot="title">身份资料</h1>
 			
@@ -140,7 +144,9 @@
 			
 		</Card>
 		
-		<Card style="margin-bottom: 16px;">
+		<!----------------------------------------附加资料--------------------------------------------->
+		
+		<Card :shadow="true" style="margin-bottom: 16px;">
 			
 			<h1 slot="title">附加资料</h1>
 			
@@ -624,7 +630,18 @@ export default {
                 },
         		{
                     title: '状态',
-                    key: 'statue'
+                    render: (h, params) => {
+                    	let statueName = () => {
+                    		let text = '- -';
+                    		if(params.row.statue == 1){
+                    			text = '已离职';
+                    		}else if(params.row.statue == 2){
+                    			text = '在岗';
+                    		}
+                    		return text
+                    	}
+                    	return h('div', statueName())
+                    }
                 },
         	],
         	

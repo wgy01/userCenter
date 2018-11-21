@@ -2,23 +2,23 @@
 	
 	<div>
 		
-		<Card>
+		<Card :shadow="true">
 			
-			<div slot="title" class="cardTitle">
-				<h1>公司列表</h1>
-				<Button type="primary" size="small" style="margin-left: 10px;" @click="createCompany">创建公司</Button>
-			</div>
+			<h1 slot="title">公司列表</h1>
 			
 			<xw-table
 			:modalTitle="tabModalTitle"
 			@on-btn-click="tabBtnClick"
+			:modalWidth="modalWidth"
 			:tableColumns="tableColumns"
 			:tableData="tableData">
+				<div slot="header">
+					<Button type="primary" @click="createCompany">创建公司</Button>
+				</div>
 				<div slot="modalContent">
-					{{companyInfo}}
 					<Form v-if="showType === 'details'" class="my-form" :label-width="80">
 						<Row>
-							<Col v-for="item in companyField" :key="item.value" :xs="24" :sm="12" :md="8" :lg="6">
+							<Col v-for="item in companyField" :key="item.value" span="12">
 								<FormItem :label="item.label+'：'">
 										<div v-if="item.select">
 											<p v-if="item.value === 'industry'">
@@ -110,6 +110,8 @@ export default {
 	},
     data () {//数据
         return {
+        	
+        	modalWidth: '700',
         	
         	addShow: false,
         	
@@ -266,7 +268,6 @@ export default {
     		this.tabModalTitle = val.params.row.name +'（'+ val.name +'）';
     		if(val.key === 'details'){//详情
     			this.industryTextArr = [];
-        	
         		this.areaTextArr = [];
     			this.companyInfo = val.params.row;
     			this.showType = val.key;
