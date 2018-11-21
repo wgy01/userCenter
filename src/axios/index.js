@@ -145,10 +145,13 @@ export const getAsyncAjaxData = (url = '',data = {}) => {
  * @param {JSON} data 需要发送的数据
  * @param {Function} fn 数据响应后的回调函数
  */
-export const getAjaxData = (url = '', data = {}, fn) => {
-	axios.post(url, data).then(response => {
+export const getAjaxData = (url = '', data = {}, fn, config = {}, errorCallBack) => {
+	axios.post(url, data, config).then(response => {
 		fn && fn(response);
-	}).catch(error => console.log('发生了错误：'+error));
+	}).catch(error => {
+		errorCallBack && errorCallBack(error);
+		console.log('!!!single发生了错误!!!：' + error);
+	});
 }
 
 /**
