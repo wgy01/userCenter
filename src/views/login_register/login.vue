@@ -29,13 +29,13 @@
 			        	<Row :gutter="6">
 			        		
 					        <Col span="14">
-					            <Input type="text" v-model="formInline.code" placeholder="图形验证码">
+					            <Input type="text" v-model="formInline.code" placeholder="不区分大小写">
 					            	<Icon type="md-key" slot="prepend" size="18" />
 					            </Input>
 					        </Col>
 					        
 					        <Col span="10">
-					        	<Tooltip class="graph-box" content="点击重新获取" placement="top">
+					        	<Tooltip class="graph-box" content="看不清点击重新获取" placement="top">
 							        <div ref="codeInstance" @click="changeCode" class="code">
 							        	<span style="visibility: hidden;">验证码</span>
 							        </div>

@@ -16,7 +16,7 @@
 					<Button type="primary" @click="createCompany">创建公司</Button>
 				</div>
 				<div slot="modalContent">
-					<Form v-if="showType === 'details'" class="my-form" :label-width="80">
+					<Form v-if="showType === 'details'" class="my-form" :label-width="100">
 						<Row>
 							<Col v-for="item in companyField" :key="item.value" span="12">
 								<FormItem :label="item.label+'：'">
@@ -39,6 +39,12 @@
 												{{seleItem.label}}
 											</p>
 										</div>
+										<p v-else-if="item.value === 'party_time'">
+											{{getLocalTime(companyInfo[item.value])}}
+										</p>
+										<p v-else-if="item.value === 'zcmoney'">
+											{{Number(companyInfo[item.value])/100}}
+										</p>
 										<p v-else>
 											{{companyInfo[item.value]}}
 										</p>
@@ -51,25 +57,66 @@
 			
 		</Card>
 		
-		<Modal v-model="addShow" width="700">
+		<Modal v-model="addShow" width="80%">
 	        <p slot="header">{{modalTitle}}</p>
-	        <Form ref="formInstance" :model="formData" :rules="ruleData" :label-width="70">
+	        <Form ref="formInstance" :model="formData" :rules="ruleData" :label-width="100">
 				<Row :gutter="16">
-					<Col :xs="24" :sm="24" :md="12" :lg="12">
+					
+					<Col :xs="24" :sm="24" :md="12" :lg="8">
 						<FormItem label="公司名称" prop="name">
 							<Input v-model="formData.name"></Input>
 				        </FormItem>
 				        <FormItem label="公司行业" prop="industry">
 				        	<industry-casc v-model="formData.industry" style="width: 100%;"></industry-casc>
 				        </FormItem>
-				        <FormItem label="国家" prop="nation">
+				        <FormItem label="信用代码" prop="xydm">
+							<Input v-model="formData.xydm"></Input>
+				        </FormItem>
+				        <FormItem label="注册类型" prop="zclx">
+							<Select v-model="formData.zclx" style="width:100%">
+						        <Option value="1">类型1</Option>
+						        <Option value="2">类型2</Option>
+						    </Select>
+				        </FormItem>
+				        <FormItem label="注册资金(元)" prop="zcmoney">
+							<InputNumber v-model="formData.zcmoney" :max="100000000" :min="0" style="width:100%"></InputNumber>
+				        </FormItem>
+				        <FormItem label="经营范围" prop="jyfw">
+							<Input v-model="formData.jyfw"></Input>
+				        </FormItem>
+					</Col>
+					
+					<Col :xs="24" :sm="24" :md="12" :lg="8">
+						<FormItem label="从业人数" prop="cynum">
+							<InputNumber v-model="formData.cynum" :max="100000000" :min="1" style="width:100%"></InputNumber>
+				        </FormItem>
+						<FormItem label="电话" prop="telphone">
+							<Input v-model="formData.telphone"></Input>
+				        </FormItem>
+						<FormItem label="传真" prop="fax">
+							<Input v-model="formData.fax"></Input>
+				        </FormItem>
+						<FormItem label="是否有党部" prop="party">
+							<RadioGroup v-model="formData.party">
+						        <Radio label="1">是</Radio>
+						        <Radio label="0">否</Radio>
+						    </RadioGroup>
+				        </FormItem>
+				        <FormItem label="党部成立时间" prop="party_time">
+				        	<DatePicker :value="formData.party_time ? new Date(parseInt(formData.party_time)*1000) : formData.party_time" type="date" placeholder="选择时间" @on-change="partyTimeChange" style="width: 100%"></DatePicker>
+				        </FormItem>
+					</Col>
+					
+					<Col :xs="24" :sm="24" :md="12" :lg="8">
+						<FormItem label="党部成员人数" prop="party_num">
+							<InputNumber v-model="formData.party_num" :max="100000000" :min="1" style="width:100%"></InputNumber>
+				        </FormItem>
+						<FormItem label="国家" prop="nation">
 							<Select v-model="formData.nation" style="width:100%">
 						        <Option value="86">中国</Option>
 						        <Option value="87">美国</Option>
 						    </Select>
 				        </FormItem>
-					</Col>
-					<Col :xs="24" :sm="24" :md="12" :lg="12">
 						<FormItem label="公司地址" prop="address">
 							<cascader-area v-model="formData.address"></cascader-area>
 				        </FormItem>
@@ -80,6 +127,7 @@
 							<Input v-model="formData.business"></Input>
 				        </FormItem>
 					</Col>
+					
 				</Row>
 			</Form>
 	        <div slot="footer" style="text-align: center;">
@@ -132,18 +180,16 @@ export default {
         		address: [],//公司地址
         		website: '',//企业官网
         		business: '',//主营业务
-        		
         		xydm: '',//信用代码
 				zclx: '',//注册类型
-				zcmoney: '',//注册资金
-				cynum: '',//从业人数
+				zcmoney: null,//注册资金
+				cynum: null,//从业人数
 				telphone: '',//电话
 				fax: '',//传真
-				party: '',//是否有党部
+				party: '1',//是否有党部
 				party_time: '',//党部成立时间
-				party_num: '',//党部成员人数
+				party_num: null,//党部成员人数
 				jyfw: '',//经营范围
-        		
         	},
         	
         	ruleData: {
@@ -154,16 +200,46 @@ export default {
                     { type: 'array', required: true, message: '请选择公司行业', trigger: 'change' }
                 ],
                 nation: [
-                    { required: true, message: '选择国家', trigger: 'blur' }
+                    { required: true, message: '选择国家', trigger: 'change' }
                 ],
                 address: [
                     { type: 'array', required: true, message: '请选择公司地址', trigger: 'change' }
                 ],
                 website: [
-                    { required: true, message: '请输入企业官网', trigger: 'blur' }
+                    { required: true, message: '请填写企业官网', trigger: 'blur' }
                 ],
                 business: [
                     { required: true, message: '请填写主营业务', trigger: 'blur' }
+                ],
+                xydm: [
+                    { required: true, message: '请输入信用代码', trigger: 'blur' }
+                ],
+                zclx: [
+                    { required: true, message: '请选择注册类型', trigger: 'change' }
+                ],
+                zcmoney: [
+                    { type: 'number', required: true, message: '请输入注册资金', trigger: 'blur' }
+                ],
+                cynum: [
+                    { type: 'number', required: true, message: '请输入从业人数', trigger: 'blur' }
+                ],
+                telphone: [
+                    { required: true, message: '请输入电话', trigger: 'blur' }
+                ],
+                fax: [
+                    { required: true, message: '请输入传真', trigger: 'blur' }
+                ],
+                party: [
+                    { required: true, message: '请选择是否有党部', trigger: 'change' }
+                ],
+                party_time: [
+                    { required: true, message: '请选择党部成立时间', trigger: 'change' }
+                ],
+                party_num: [
+                    { type: 'number', required: true, message: '请输入党部成员人数', trigger: 'blur' }
+                ],
+                jyfw: [
+                    { required: true, message: '请填经营范围', trigger: 'blur' }
                 ],
            	},
         	
@@ -176,6 +252,62 @@ export default {
         			label: '公司行业',
         			value: 'industry',
         			select: ['hx1', 'hx2']
+        		},
+        		{
+        			label: '信用代码',
+        			value: 'xydm'
+        		},
+        		{
+        			label: '注册类型',
+        			value: 'zclx',
+        			select: [
+        				{
+        					label: '类型1',
+        					value: '1'
+        				},
+        				{
+        					label: '类型2',
+        					value: '2'
+        				},
+        			]
+        		},
+        		{
+        			label: '注册资金',
+        			value: 'zcmoney'
+        		},
+        		{
+        			label: '从业人数',
+        			value: 'cynum'
+        		},
+        		{
+        			label: '电话',
+        			value: 'telphone'
+        		},
+        		{
+        			label: '传真',
+        			value: 'fax'
+        		},
+        		{
+        			label: '是否有党部',
+        			value: 'party',
+        			select: [
+        				{
+        					label: '是',
+        					value: '1'
+        				},
+        				{
+        					label: '否',
+        					value: '0'
+        				},
+        			]
+        		},
+        		{
+        			label: '党部成立时间',
+        			value: 'party_time'
+        		},
+        		{
+        			label: '党部成员人数',
+        			value: 'party_num'
         		},
         		{
         			label: '国家',
@@ -203,6 +335,10 @@ export default {
         		{
         			label: '企业官网',
         			value: 'website'
+        		},
+        		{
+        			label: '经营范围',
+        			value: 'jyfw'
         		},
         		{
         			label: '主营业务',
@@ -243,6 +379,14 @@ export default {
     },
     methods: {//方法
     	
+    	partyTimeChange(dateStr){
+    		if(dateStr){
+    			this.formData.party_time = (new Date(dateStr).getTime()/1000).toString();
+    		}else{
+    			this.formData.party_time = '';
+    		}
+    	},
+    	
     	industryChange(value, selectedData){
     		this.industryTextArr = selectedData;
     	},
@@ -252,14 +396,7 @@ export default {
     	},
     	
     	createCompany(){//创建公司按钮
-    		this.formData = {
-        		name: '',//公司名称
-        		industry: [],//公司行业
-        		nation: '',//国家
-        		address: [],//公司地址
-        		website: '',//企业官网
-        		business: '',//主营业务
-        	};
+			this.$refs['formInstance'].resetFields();
     		this.showType = 'add';
     		this.addShow = true;
     	},
@@ -272,7 +409,7 @@ export default {
     			this.companyInfo = val.params.row;
     			this.showType = val.key;
     		}else if(val.key === 'edit'){//编辑
-    			console.log(val.params.row);
+    			this.$refs['formInstance'].resetFields();
     			this.formData = {
 	        		name: val.params.row.name,//公司名称
 	        		industry: [val.params.row.hx1, val.params.row.hx2],//公司行业
@@ -280,6 +417,16 @@ export default {
 	        		address: [val.params.row.provice, val.params.row.city, val.params.row.county],//公司地址
 	        		website: val.params.row.website,//企业官网
 	        		business: val.params.row.business,//主营业务
+	        		xydm: val.params.row.xydm,//信用代码
+					zclx: val.params.row.zclx,//注册类型
+					zcmoney: (Number(val.params.row.zcmoney)/100),//注册资金
+					cynum: Number(val.params.row.cynum),//从业人数
+					telphone: val.params.row.telphone,//电话
+					fax: val.params.row.fax,//传真
+					party: val.params.row.party,//是否有党部
+					party_time: val.params.row.party_time,//党部成立时间
+					party_num: Number(val.params.row.party_num),//党部成员人数
+					jyfw: val.params.row.jyfw,//经营范围
 	        	};
 	        	this.showType = val.key;
 	        	this.addShow = true;
@@ -301,18 +448,16 @@ export default {
     					website: this.formData.website,//企业官网
     					business: this.formData.business,//主营业务
     					yy_img: 'img.jpg',//营业执照照片
-    					
-    					xydm: 'abcd',//信用代码
-    					zclx: '0',//注册类型
-    					zcmoney: '1000',//注册资金
-    					cynum: 200,//从业人数
-    					telphone: '13800138000',//电话
-    					fax: 'wewqeqwewqeqwe',//传真
-    					party: '0',//是否有党部
-    					party_time: '156465156',//党部成立时间
-    					party_num: '2000',//党部成员人数
-    					jyfw: 'ddddddddd',//经营范围
-    					
+    					xydm: this.formData.xydm,//信用代码
+    					zclx: this.formData.zclx,//注册类型
+    					zcmoney: this.formData.zcmoney*100,//注册资金
+    					cynum: this.formData.cynum,//从业人数
+    					telphone: this.formData.telphone,//电话
+    					fax: this.formData.fax,//传真
+    					party: this.formData.party,//是否有党部
+    					party_time: this.formData.party_time,//党部成立时间
+    					party_num: this.formData.party_num,//党部成员人数
+    					jyfw: this.formData.jyfw,//经营范围
     					token_key: res1.data.token_key,
     					token: res1.data.token,
     				}, res2 => {
@@ -341,6 +486,10 @@ export default {
                 }
             });
     	},
+    	
+    	getLocalTime(nS){//时间戳转字符到日期
+			return new Date(parseInt(nS) * 1000).toLocaleString().replace(/\//g, "-").replace(/[上午|下午]([\d\:]*)/g, "");
+		},
     	
     },
     computed: {//计算属性

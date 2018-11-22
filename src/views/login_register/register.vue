@@ -26,7 +26,19 @@
 			        </FormItem>
 			        
 			        <FormItem label="手机号码" prop="mobileNum">
-					    <Input type="text" v-model="formInline.mobileNum" placeholder="输入手机号码"></Input>
+			        	<Row type="flex">
+			        		
+					        <Col span="14">
+					            <Input type="text" v-model="formInline.mobileNum" placeholder="输入手机号码"></Input>
+					        </Col>
+					        
+					        <Col span="10" style="padding-left: 4px;">
+		            			<Button style="padding: 5px 4px 6px;text-align: center;box-sizing: border-box;" ghost :disabled="sendSuccess" long type="success" @click="getCode">
+		            				{{sendSuccess ? timeS + '秒后重新发送' : '获取验证码'}}
+		            			</Button>
+					        </Col>
+					        
+					    </Row>
 			        </FormItem>
 			        
 			        <!--<FormItem label="邮箱" prop="email">
@@ -34,21 +46,7 @@
 			        </FormItem>-->
 			        
 			        <FormItem label="短信验证码" prop="code">
-			        	
-			        	<Row type="flex">
-			        		
-					        <Col span="11">
-					            <Input type="text" v-model="formInline.code" placeholder="输入短信验证码"></Input>
-					        </Col>
-					        
-					        <Col span="13" style="padding-left: 6px;">
-		            			<Button :disabled="sendSuccess" long type="success" @click="getCode">
-		            				{{sendSuccess ? S+'s'+' 后重新发送' : '发送短信验证码'}}
-		            			</Button>
-					        </Col>
-					        
-					    </Row>
-					    
+			        	<Input type="text" v-model="formInline.code" placeholder="输入短信验证码"></Input>
 			        </FormItem>
 			        
 			    </Form>
@@ -134,7 +132,7 @@ export default {
         	
         	sendSuccess: false,//发送成功
         	
-        	S: 60,//时间
+        	timeS: 60,//时间
         	
         }
     },
@@ -154,8 +152,10 @@ export default {
 //  					email: this.formInline.email,
 					},(response) => {
 						if(response.code == 0){
-							this.$parent.showType = 'login';
 							this.$Message.success('注册成功');
+							this.$router.replace({
+								name: 'person'
+							});
 						}
 					});
                     
@@ -170,22 +170,19 @@ export default {
 			}, res => {
 				if(res.code == 0){
 					
-					this.sendSuccess = true;
+					console.log('验证码为：'+ res.data.smscode);
 					
-					console.log(response.debug.smscode);
+					this.sendSuccess = true;
 					
 					this.$Message.success('发送成功');
 					
 					let t = setInterval(() => {
-						
-						--this.S;
-						
-						if(this.S <= 0){
+						--this.timeS;
+						if(this.timeS <= 0){
 							clearInterval(t);
-							this.S = 60;
+							this.timeS = 60;
 							this.sendSuccess = false;
 						}
-						
 					},1000);
 					
 				}
