@@ -170,7 +170,7 @@ export default {
 			}, res => {
 				if(res.code == 0){
 					
-					console.log('验证码为：'+ res.data.smscode);
+//					console.log('验证码为：'+ res.data.smscode);
 					
 					this.sendSuccess = true;
 					
