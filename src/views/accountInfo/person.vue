@@ -768,6 +768,11 @@ export default {
     				this.$refs['formExperience'].resetFields();
     				this.modalShow = false;
     				this.$Message.success('工作经历添加成功');
+    				$ax.getAjaxData('Center/workList', {}, res => {//获取工作经历
+    					if(res.code == 0){
+    						this.workExperienceData = res.data;
+    					}
+    				});
     			}
     		});
     	},
@@ -784,6 +789,11 @@ export default {
     				this.$refs['formExperience'].resetFields();
     				this.modalShow = false;
     				this.$Message.success('教育经历添加成功');
+    				$ax.getAjaxData('Center/educationList', {}, res => {//获取教育经历
+    					if(res.code == 0){
+    						this.educationData = res.data;
+    					}
+    				});
     			}
     		});
     	},
